@@ -8,6 +8,10 @@
         <q-toolbar-title>
           Title
         </q-toolbar-title>
+
+        <q-space />
+
+        <user-icon />
       </q-toolbar>
     </q-header>
 
@@ -32,6 +36,7 @@
 <script>
 import ChannelList from 'src/components/ChannelList.vue'
 import CommandBar from 'src/components/CommandBar.vue'
+import UserIcon from 'src/components/UserIcon.vue'
 import { ref } from 'vue'
 
 export default {
@@ -42,6 +47,6 @@ export default {
     }
     return { leftDrawerOpen, toggleLeftDrawer }
   },
-  components: { ChannelList, CommandBar }
+  components: { ChannelList, CommandBar, UserIcon }
 }
 </script>
