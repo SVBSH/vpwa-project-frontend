@@ -1,0 +1,43 @@
+@startuml lala
+
+
+enum userState {
+    ONLINE
+    DND
+    OFFLINE
+}
+
+Class "User" as rUser {
+    * id : number <<generated>>
+    * name: string
+    * surname : string
+    * nickname: string
+    * password: string
+    * state: userState
+}
+
+class "Message" as rMessage {
+    * id: number <<generated>>
+    * sent: datetime
+    * content: string
+    * channelId: <<FK>>
+    * author: <<FK>>
+}
+
+class "Channel" as rChannel {
+    * id: number <<generated>>
+    * name: string
+    * isPublic: boolean
+    * adminId: <<FK>>
+}
+
+Class "UserMembership" as rUserMembership {
+    userId: <<FK>>
+    channelId: <<FK>>
+}
+
+rUserMembership o--o rUser
+rUserMembership o--o rChannel
+rMessage o--> rChannel
+
+@enduml
