@@ -37,6 +37,7 @@
 import ChannelList from 'src/components/ChannelList.vue'
 import CommandBar from 'src/components/CommandBar.vue'
 import UserIcon from 'src/components/UserIcon.vue'
+import { userChannelList } from 'src/model/Channel'
 import { ref } from 'vue'
 
 export default {

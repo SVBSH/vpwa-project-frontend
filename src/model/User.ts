@@ -3,10 +3,12 @@ import { useRouter } from "vue-router"
 import { FormError } from "./FormError"
 
 export class User {
+  public id = 0
   public name = ""
   public surname = ""
   public nickname = ""
   public password = ""
+  public state: "online" | "offline" | "dnd" = "online"
 
   constructor(opt?: Partial<User>) {
     if (opt) Object.assign(this, opt)
