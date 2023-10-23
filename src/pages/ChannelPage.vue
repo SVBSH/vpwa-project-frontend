@@ -1,6 +1,6 @@
 <template>
   <q-page>
-    <channel-view />
+    <channel-view v-if="!loading" />
     <q-inner-loading :showing="loading" dark />
   </q-page>
 </template>

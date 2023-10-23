@@ -20,8 +20,8 @@ import { defineComponent } from "vue"
 
 export default defineComponent({
   setup(props, ctx) {
-    const channel = useChannel()
     return { channel }
+    const channel = useChannel({ required: true })
   },
 })
 </script>
