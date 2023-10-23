@@ -35,6 +35,24 @@ export class ChannelListAdapter {
       ]
     }))
 
+    // Mock for user typing
+    setInterval(() => {
+      const typing = this.channels.get(0)!.usersTyping
+      let text = typing.get(user3)
+
+      if (text != null && text.length > 100) {
+        typing.delete(user3)
+        return
+      }
+
+      if (text == null) {
+        text = Math.random().toString().substring(2)
+      } else {
+        text += " " + Math.random().toString().substring(2)
+      }
+
+      typing.set(user3, text)
+    }, 1000)
 
     return self
   }
