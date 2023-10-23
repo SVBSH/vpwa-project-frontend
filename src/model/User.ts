@@ -46,7 +46,12 @@ export class UserAdapter {
   }
 
   protected _handleNoUser() {
-    this._router.replace({ name: "Login", query: { redirect: this._router.currentRoute.value.fullPath } })
+    this._router.replace({ name: "Login", query: { redirect: this._router.currentRoute.value.fullPath } }).finally(() => {
+      // When a user is requested but not given an error may be thrown by the requesting component.
+      // This error will stop Vue rendering and prevent the login page from loading. Resetting
+      // the whole Vue app by reloading solves this problem.
+      location.reload()
+    })
   }
 
   constructor() {
