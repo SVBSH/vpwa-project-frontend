@@ -1,6 +1,9 @@
 import { InjectionKey, inject, provide, reactive, toRef } from "vue"
 import { User, UserAdapter, useUserAdapter } from "./User"
 
+
+export type ChannelType = "public" | "private"
+
 export class Message {
   public id = 0
   public user: User = null!
@@ -16,10 +19,32 @@ export class Channel {
   public name = ""
   public messages: Message[] = []
   public users: User[] = []
+  public admin: User = null!
+  public type: ChannelType = "public"
+  public restrictedList = new Map<string, number>()
 
   constructor(opt?: Partial<Channel>) {
     if (opt) Object.assign(this, opt)
     return reactive(this)
+  }
+
+  public hasMemberBanned(nickname: string): boolean {
+    if (nickname == null) {
+      return false
+    }
+    return this.restrictedList.get(nickname) == 3
+  }
+
+  public hasMember(nickname: string): boolean {
+    if (nickname == null) {
+      return false
+    }
+    for (const member of this.users) {
+      if (member.nickname == nickname) {
+        return true
+      }
+    }
+    return false
   }
 }
 
@@ -37,6 +62,10 @@ export class ChannelAdapter {
     const currentUser = this._userAdapter.getCurrentUser()
 
     this._selectedChannel.messages.push(new Message({ id: Date.now(), content, user: currentUser }))
+  }
+  // TODO:
+  public loadMessages() {
+    return
   }
 
   protected _selectedChannel: Channel | null = null
