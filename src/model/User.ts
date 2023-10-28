@@ -1,6 +1,9 @@
-import { InjectionKey, inject, provide } from "vue"
+import { InjectionKey, inject, provide, reactive } from "vue"
 import { useRouter } from "vue-router"
 import { FormError } from "./FormError"
+
+export type UserState = typeof USER_STATE[number]
+export const USER_STATE = ["online", "offline", "dnd"] as const
 
 export class User {
   public id = 0
@@ -8,10 +11,11 @@ export class User {
   public surname = ""
   public nickname = ""
   public password = ""
-  public state: "online" | "offline" | "dnd" = "online"
+  public state: UserState = "online"
 
   constructor(opt?: Partial<User>) {
     if (opt) Object.assign(this, opt)
+    return reactive(this)
   }
 }
 
@@ -47,6 +51,13 @@ export class UserAdapter {
 
   protected _handleNoUser() {
     this._router.replace({ name: "Login", query: { redirect: this._router.currentRoute.value.fullPath } })
+  }
+
+  public setUserState(state: UserState) {
+    if (this._user == null) {
+      throw new Error("User does not exist")
+    }
+    this._user.state = state;
   }
 
   constructor() {
