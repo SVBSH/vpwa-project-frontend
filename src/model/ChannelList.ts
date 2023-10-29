@@ -117,7 +117,8 @@ export class ChannelListAdapter {
       admin: user1,
       users: [user1, user2, user3, user4, user5, user6, user7, user8, user9],
       restrictedList: new Map([
-        ['bar', ['asd', 'baz']]
+        ['bar', ['asd', 'baz']],
+        ['456', ['asd', 'baz', 'wasas']]
       ]),
       messages: [
         new Message({ user: user1, content: "Lorem ipsum dolor sit amet" }),
