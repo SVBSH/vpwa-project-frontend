@@ -23,37 +23,45 @@
 
 <script lang="ts">
 import { useChannelAdapter } from "src/model/Channel";
-import { useChannelList } from "src/model/ChannelList";
 import { defineComponent, ref } from "vue";
-import { useUserAdapter } from "src/model/User";
-import { useQuasar } from "quasar";
-import { useRouter } from "vue-router";
 import CommandParser from "src/utils/CommandParser";
-
+import { useQuasar } from "quasar";
+import { CommandError } from "src/model/CommandError";
 export default defineComponent({
   setup(props, ctx) {
-    const quasar = useQuasar();
-    const router = useRouter();
-
     const messageText = ref("");
     const channel = useChannelAdapter();
-    const userAdapter = useUserAdapter();
-    const channelListAdapter = useChannelList();
 
-    const commandParser = new CommandParser(
-      router,
-      channel,
-      userAdapter,
-      channelListAdapter,
-      quasar
-    );
+    const quasar = useQuasar()
+    const commandParser = new CommandParser();
 
-    function handleSubmit(event: Event) {
+    async function handleSubmit(event: Event) {
       event.preventDefault();
       const message = messageText.value.trim();
 
       if (commandParser.isCommand(message)) {
-        commandParser.parse(message);
+        // TODO: try/catch
+        try {
+          const commandMessage = await commandParser.parse(message)
+          console.log(commandMessage);
+
+          if (commandMessage !== '') {
+            quasar.notify({
+              type: "positive",
+              html: true,
+              message: commandMessage,
+            })
+        }} catch (err) {
+          if (err instanceof CommandError) {
+            quasar.notify({
+              color: "red-5",
+              textColor: "white",
+              icon: "warning",
+              html: true,
+              message: err.message
+            })
+          }
+        }
       } else {
         channel.sendMessage(message);
       }
