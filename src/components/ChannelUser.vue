@@ -21,8 +21,6 @@ export default defineComponent({
     user: { type: User, required: true },
   },
   setup(props, ctx) {
-    console.log(props.user.nickname);
-
     return { user: toRef(props, "user") };
   },
 });
