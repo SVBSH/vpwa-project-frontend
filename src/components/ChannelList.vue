@@ -31,7 +31,6 @@ export default defineComponent({
       if (reqChannel != undefined) {
         channelAdapter.setSelectedChannel(reqChannel);
         router.push(`/channel/${channelId}`);
-        console.log("sekecting");
       }
     }
     return { channelList, selectChannel };
