@@ -1,4 +1,4 @@
-import { InjectionKey, inject, provide, reactive, toRef } from "vue"
+import { InjectionKey, Ref, inject, provide, reactive, toRef } from "vue"
 import { User, UserAdapter } from "./User"
 
 
@@ -20,6 +20,7 @@ export class Channel {
   public name = ""
   public messages: Message[] = []
   public users: User[] = []
+  public usersTyping = new Map<User, string>()
   public admin: User = null!
   public type: ChannelType = "public"
   public restrictedList: RestrictedList = new Map<string, string[]>()
@@ -195,7 +196,14 @@ export function useChannelAdapter() {
   return inject(CHANNEL_ADAPTER_KEY)!
 }
 
-export function useChannel() {
+export function useChannel(): Ref<Channel | null>
+export function useChannel(opt: { required: true }): Ref<Channel>
+export function useChannel({ required = false } = {}) {
   const channelAdapter = useChannelAdapter()
+
+  if (required) {
+    if (channelAdapter.selectedChannel == null) throw new Error("Executed useChannel with required flag, but no channel is selected")
+  }
+
   return toRef(channelAdapter, "selectedChannel")
 }
