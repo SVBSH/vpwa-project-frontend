@@ -51,17 +51,23 @@ export default class CommandParser {
     switch (command) {
       case 'list': {
         if (this.channel.selectedChannel == null) {
-          return commandMessage
+          throw new CommandError('This command could be only called inside channel')
         }
-        commandMessage = await this.commandShowChannelMembers()
+        commandMessage = await this.commandShowChannelMembers(args)
         break
       }
       case 'cancel': {
-        commandMessage = await this.commandCancel()
+        if (this.channel.selectedChannel == null) {
+          throw new CommandError('This command could be only called inside channel')
+        }
+        commandMessage = await this.commandCancel(args)
         break
       }
       case 'quit': {
-        commandMessage = await this.commandQuit()
+        if (this.channel.selectedChannel == null) {
+          throw new CommandError('This command could be only called inside channel')
+        }
+        commandMessage = await this.commandQuit(args)
         break
       }
       case 'invite': {
@@ -73,11 +79,16 @@ export default class CommandParser {
         break
       }
       case 'revoke': {
-        // TODO: vymazat z restrictedListu po kicknuti
+        if (this.channel.selectedChannel == null) {
+          throw new CommandError('This command could be only called inside channel')
+        }
         commandMessage = await this.commandRevoke(args)
         break
       }
       case 'kick': {
+        if (this.channel.selectedChannel == null) {
+          throw new CommandError('This command could be only called inside channel')
+        }
         commandMessage = await this.commandKick(args)
         break
       }
@@ -97,6 +108,9 @@ export default class CommandParser {
   }
 
   private async commandJoin(args: string[]) {
+    if (args.length == 0) {
+      throw new CommandError('Invalid command')
+    }
     const channelType: ChannelType =
       args[args.length - 1] == "private" ? "private" : "public";
 
@@ -137,18 +151,22 @@ export default class CommandParser {
     }
   }
 
-  private async commandCancel() {
+  private async commandCancel(args: string[]) {
+    if (args.length != 0) {
+      throw new CommandError('Invalid Command')
+    }
     const user: User = this.userAdapter.getCurrentUser();
-    // TODO: throw
     if (
       this.channel.selectedChannel != null &&
       this.channel.selectedChannel.admin != null
     ) {
-      if (this.channel.selectedChannel?.admin.id == user.id) {
-        // await this.channelListAdapter.quitChannel(this.channel.selectedChannel.id);
+      if (this.channel.isMemberAdmin(user.nickname)) {
+        this.channelListAdapter.channels.delete(this.channel.selectedChannel.id)
+        this.router.push('/')
         return `Removing channel <strong>${this.channel.selectedChannel.name}</strong>`;
       } else {
         await this.channel.removeUser(user.nickname);
+        this.router.push('/')
         return `Removing user from channel <strong>${this.channel.selectedChannel.name}</strong>`;
       }
     }
@@ -185,12 +203,16 @@ export default class CommandParser {
     if (!this.channel.isMemberAdmin(currentUser.nickname)) {
       throw new CommandError('Your are not allowed to add user to this channel')
     }
+
     // TODO: message removed user..
     await this.channel.removeUser(nickname)
     return `User "${nickname}" will be removed from "${this.channel.selectedChannel.name}"`
   }
 
-  private async commandShowChannelMembers() {
+  private async commandShowChannelMembers(args: string[]) {
+    if (args.length != 0) {
+      throw new CommandError('Invalid command')
+    }
     this.quasar.dialog({
       component: DialogChannelUsers,
 
@@ -205,7 +227,10 @@ export default class CommandParser {
    * Allow admin of the channel to leave his channel. After that,
    * the channel will be destroyed.
    */
-  private async commandQuit() {
+  private async commandQuit(args: string[]) {
+    if (args.length != 0) {
+      throw new CommandError('Invalid command')
+    }
     if (this.channel.selectedChannel == null) {
       return ''
     }
@@ -217,6 +242,10 @@ export default class CommandParser {
 
    // TODO: vymazat zoznam uzivatel v restrictedList
   private async commandInvite(args: string[]) {
+    if (args.length != 1) {
+      throw new CommandError('Invalid command')
+    }
+
     const user: User = this.userAdapter.getCurrentUser();
     const nickname: string = args[0];
     if (this.channel.selectedChannel == null) {
