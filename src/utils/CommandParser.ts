@@ -5,6 +5,12 @@ import { User, UserAdapter } from "src/model/User";
 import { ChannelType } from "src/model/Channel";
 import { QVueGlobals } from "quasar";
 import DialogChannelUsers from "src/components/DialogChannelUsers.vue";
+import { useRouter } from "vue-router";
+import { useChannelAdapter } from "src/model/Channel";
+import { useUserAdapter } from "src/model/User";
+import { useChannelList } from "src/model/ChannelList";
+import { CommandError } from "src/model/CommandError";
+import { useQuasar } from "quasar";
 
 
 export default class CommandParser {
@@ -15,19 +21,12 @@ export default class CommandParser {
   public channelListAdapter: ChannelListAdapter;
   public message = ''
 
-  constructor(
-    router: Router,
-    channel: ChannelAdapter,
-    userAdapter: UserAdapter,
-    channelListAdapter: ChannelListAdapter,
-    quasar: QVueGlobals
-    )
-    {
-    this.router = router
-    this.channel = channel
-    this.userAdapter = userAdapter
-    this.channelListAdapter = channelListAdapter
-    this.quasar = quasar
+  constructor() {
+    this.router = useRouter()
+    this.channel = useChannelAdapter();
+    this.userAdapter = useUserAdapter();
+    this.channelListAdapter = useChannelList();
+    this.quasar = useQuasar()
   }
 
   public isCommand(message: string): boolean {
@@ -37,59 +36,56 @@ export default class CommandParser {
     return message[0] == "/";
   }
 
-  public parse(message: string) {
+  public async parse(message: string) {
     this.message = message
     const args = message.split(" ");
 
     const command: string = args[0].slice(1);
     args.shift();
-    this.processCommand(command, args)
+    const commandMessage = await this.processCommand(command, args)
+    return commandMessage
   }
 
-  private processCommand(command: string, args: string[]) {
+  private async processCommand(command: string, args: string[]) {
+    let commandMessage = ''
     switch (command) {
       case 'list': {
         if (this.channel.selectedChannel == null) {
-          return
+          return commandMessage
         }
-        this.commandShowChannelMembers()
+        commandMessage = await this.commandShowChannelMembers()
         break
       }
       case 'cancel': {
-        this.commandCancel()
+        commandMessage = await this.commandCancel()
         break
       }
       case 'quit': {
-        this.commandQuit()
+        commandMessage = await this.commandQuit()
         break
       }
       case 'invite': {
-        // if (this.channel.selectedChannel != null) {
-        //   this.channel.selectedChannel.admin = this.userAdapter.getCurrentUser()
-        // }
-        this.commandInvite(args)
+        commandMessage = await this.commandInvite(args)
         break
       }
       case 'join': {
-        this.commandJoin(args)
+        commandMessage = await this.commandJoin(args)
         break
       }
       case 'revoke': {
         // TODO: vymazat z restrictedListu po kicknuti
-        this.commandRevoke(args)
+        commandMessage = await this.commandRevoke(args)
         break
       }
       case 'kick': {
-        // if (this.channel.selectedChannel != null) {
-        //   this.channel.selectedChannel.admin = this.userAdapter.getCurrentUser()
-        // }
-        this.commandKick(args)
+        commandMessage = await this.commandKick(args)
         break
       }
       default: {
-        console.log('Invalid command');
+        throw new CommandError('Invalid command')
       }
     }
+    return commandMessage
   }
 
   private async selectChannel(channelId: number) {
@@ -114,58 +110,35 @@ export default class CommandParser {
     const requestedChannel = this.channelListAdapter.getChannelByName(channelName);
     const currentUser: User = this.userAdapter.getCurrentUser();
 
-    let errMessage = null;
     // Create a new channel
     if (requestedChannel == null) {
-      // TODO: try create a channel
+      // TODO: try to create a channel
       const newChannel = await this.channelListAdapter.addChannel(
         channelName,
         channelType,
         currentUser
       );
-      if (newChannel == null) {
-        // TODO: user message
-        return;
+      if (newChannel == undefined) {
+        return '';
       }
-      console.log(this.channelListAdapter.channels);
-
-      this.quasar.notify({
-        type: "positive",
-        html: true,
-        message: `Creating channel <strong>${channelName}</strong>`,
-      });
-
-      await this.selectChannel(newChannel?.id);
-      // TODO: catch error and print message
-      return;
+      await this.selectChannel(newChannel.id);
+      return `Creating channel <strong>${channelName}</strong>`
     } else if (requestedChannel.type != "public") {
-      errMessage = `You could not join to requested channel because <strong>${channelName}</strong> is not a public channel.`;
+      throw new CommandError(`You could not join to <strong>${channelName}</strong> because it is a private channel.`)
     } else if (this.channel.isMember(currentUser.nickname)) {
-      errMessage = `You are <strong>${currentUser.nickname}</strong> already a member of channel <strong>${requestedChannel.name}</strong>.`;
+      throw new CommandError(`You are <strong>${currentUser.nickname}</strong> already a member of channel <strong>${requestedChannel.name}</strong>.`)
     } else if (this.channel.isMemberBanned(currentUser.nickname)) {
-      errMessage = `<strong>${currentUser.nickname}</strong> is banned from channel <strong>${requestedChannel.name}</strong>.`;
-      // Add user to channel
+      throw new CommandError(`<strong>${currentUser.nickname}</strong> is banned from channel <strong>${requestedChannel.name}</strong>.`)
     } else {
-      requestedChannel.users.push(currentUser);
-
-      this.quasar.notify({
-        type: "positive",
-        html: true,
-        message: `Adding user <strong>${currentUser.nickname}</strong> to channel <strong>${channelName}</strong>`,
-      });
-      await this.selectChannel(requestedChannel.id);
-      return;
+      // Add user to channel
+      requestedChannel.users.push(currentUser)
+      await this.selectChannel(requestedChannel.id)
+      return `Adding user <strong>${currentUser.nickname}</strong> to channel <strong>${channelName}</strong>`
     }
-    this.quasar.notify({
-      type: "negative",
-      html: true,
-      message: errMessage,
-    });
   }
- // partialy
+
   private async commandCancel() {
     const user: User = this.userAdapter.getCurrentUser();
-    let message = "";
     // TODO: throw
     if (
       this.channel.selectedChannel != null &&
@@ -173,50 +146,48 @@ export default class CommandParser {
     ) {
       if (this.channel.selectedChannel?.admin.id == user.id) {
         // await this.channelListAdapter.quitChannel(this.channel.selectedChannel.id);
-        message = `Removing channel <strong>${this.channel.selectedChannel.name}</strong>`;
+        return `Removing channel <strong>${this.channel.selectedChannel.name}</strong>`;
       } else {
         await this.channel.removeUser(user.nickname);
-        message = `Removing user from channel <strong>${this.channel.selectedChannel.name}</strong>`;
+        return `Removing user from channel <strong>${this.channel.selectedChannel.name}</strong>`;
       }
-      this.quasar.notify({
-        type: "positive",
-        html: true,
-        message: message,
-      });
     }
+    return ''
   }
 
   private async commandKick(args: string[]) {
+    if (args.length != 1) {
+      throw new CommandError('Invalid command')
+    }
+
     const banInitiator: User = this.userAdapter.getCurrentUser();
     const targetUserNickname = args[0]
     await this.channel.banMember(banInitiator, targetUserNickname)
+    return 'User was banned from channel'
   }
 
   private async commandRevoke(args: string[]) {
+    if (args.length != 1) {
+      throw new CommandError('Invalid command')
+    }
+
     const currentUser: User = this.userAdapter.getCurrentUser();
     const nickname = args[0]
 
     if (this.channel.selectedChannel == null) {
-      return
+      return ''
     }
 
     if (this.channel.selectedChannel.type === "public") {
-      this.quasar.notify({
-        type: 'negative',
-        message: 'This command should be invoked only in public channels'
-      })
-      return
+      throw new CommandError('This command should be invoked only in public channels')
     }
 
     if (!this.channel.isMemberAdmin(currentUser.nickname)) {
-      this.quasar.notify({
-        type: 'negative',
-        message: 'Your are not allowed to add user to this channel'
-      })
-      return
+      throw new CommandError('Your are not allowed to add user to this channel')
     }
-
+    // TODO: message removed user..
     await this.channel.removeUser(nickname)
+    return `User "${nickname}" will be removed from "${this.channel.selectedChannel.name}"`
   }
 
   private async commandShowChannelMembers() {
@@ -227,44 +198,31 @@ export default class CommandParser {
         channelUsers: this.channel.selectedChannel?.users,
       }
     })
+    return ''
   }
 
   /**
    * Allow admin of the channel to leave his channel. After that,
    * the channel will be destroyed.
    */
-  // partialy
   private async commandQuit() {
     if (this.channel.selectedChannel == null) {
-      return
+      return ''
     }
     const user: User = this.userAdapter.getCurrentUser();
     await this.channelListAdapter.quitChannel(this.channel.selectedChannel.id, user)
     this.router.push(`/`);
-
-    // if (this.channel.selectedChannel != null) {
-    //   if (user.id === this.channel.selectedChannel.admin.id) {
-    //     this.quasar.notify({
-    //       type: "positive",
-    //       html: true,
-    //       message: `Channel <strong>${this.channel.selectedChannel.name}</strong> was removed"`,
-    //     });
-    //   } else {
-    //     this.quasar.notify({
-    //       type: "negative",
-    //       message: `You do not have a permission to remove channel`,
-    //     });
-    //   }
-    // }
+    return `Channel <strong>${this.channel.selectedChannel.name}</strong> was removed"`
   }
 
    // TODO: vymazat zoznam uzivatel v restrictedList
-  private commandInvite(args: string[]) {
+  private async commandInvite(args: string[]) {
     const user: User = this.userAdapter.getCurrentUser();
     const nickname: string = args[0];
     if (this.channel.selectedChannel == null) {
-      return;
+      return '';
     }
-    this.channel.inviteMember(user, nickname)
+    const message = this.channel.inviteMember(user, nickname)
+    return message
   }
 }
