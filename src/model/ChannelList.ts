@@ -2,6 +2,7 @@ import { InjectionKey, Ref, inject, onUnmounted, provide, reactive, ref, watch }
 import { Channel, Message, useChannelAdapter } from "./Channel"
 import { User } from "./User"
 import { ChannelType } from "./Channel"
+import { CommandError } from "./CommandError"
 const CHANNEL_LIST_KEY = Symbol() as InjectionKey<ChannelListAdapter>
 
 // FIXME: will be replaced with an API call
@@ -21,12 +22,11 @@ export class ChannelListAdapter {
 
   public async addChannel(channelName: string, channelType: ChannelType,  user: User) {
     if (channelName == null || channelName.length == 0) {
-      // TODO: throw exception CommandError
-      return null
+      return
     }
     // if channel already exist
     if (this.getChannelByName(channelName) != null) {
-      return null
+      throw new CommandError('This channel already exist')
     }
 
     channelId++;
@@ -43,52 +43,32 @@ export class ChannelListAdapter {
     return newChannel
   }
 
-  public async joinChannel() {
-    // TODO: throw except. if error
-    console.log('join channel');
-
-      let errMessage = null;
-      // Create a new channel
-      // if (requestedChannel == null) {
-      //   // TODO: try create a channel
-      //   const newChannel = await channelListAdapter.addChannel(
-      //     channelName,
-      //     channelType,
-      //     currentUser
-      //   );
-      //   if (newChannel == null) {
-      //     // TODO: user message
-      //     return;
-      //   }
-
-      //   quasar.notify({
-      //     type: "positive",
-      //     message: `Creating channel \"${channelName}\"`,
-      //   });
-
-      //   await selectChannel(newChannel?.id);
-      //   // TODO: catch error and print message
-      //   return;
-      // } else if (requestedChannel.type != "public") {
-      //   errMessage = `Could not join to requested channel because \"${channelName}\" is not a public channel.`;
-      // } else if (requestedChannel.hasMember(currentUser.nickname)) {
-      //   errMessage = `You are "${currentUser.nickname}" already a member of channel \"${requestedChannel.name}\".`;
-      // } else if (requestedChannel.hasMemberBanned(currentUser.nickname)) {
-      //   errMessage = `User "${currentUser.nickname}" is banned from channel <${requestedChannel.name}>,`;
-      //   // Add user to channel
-      // } else {
-      //   requestedChannel.users.push(currentUser);
-      //   quasar.notify({
-      //     type: "positive",
-      //     message: `Adding user \"${currentUser.nickname}\" to channel <${channelName}>`,
-      //   });
-      //   selectChannel(requestedChannel.id);
-      //   return;
-      // }
-      // quasar.notify({
-      //   type: "negative",
-      //   message: errMessage,
-      // });
+  public async joinChannel(channelName: string, channelType: ChannelType, user: User) {
+  //   const requestedChannel = this.getChannelByName(channelName);
+  //   const channelAdapter = useChannelAdapter()
+  //    // Create a new channel
+  //   if (requestedChannel == null) {
+  //     // TODO: try to create a channel
+  //     const newChannel = await this.addChannel(
+  //       channelName,
+  //       channelType,
+  //       user
+  //     );
+  //     if (newChannel == undefined) {
+  //       return '';
+  //     }
+  //     return `Creating channel <strong>${channelName}</strong>`
+  //   } else if (requestedChannel.type != "public") {
+  //     throw new CommandError(`You could not join to requested channel because <strong>${channelName}</strong> is not a public channel.`)
+  //   } else if (channelAdapter.isMember(user.nickname)) {
+  //     throw new CommandError(`You are <strong>${user.nickname}</strong> already a member of channel <strong>${requestedChannel.name}</strong>.`)
+  //   } else if (channelAdapter.isMemberBanned(user.nickname)) {
+  //     throw new CommandError(`<strong>${user.nickname}</strong> is banned from channel <strong>${requestedChannel.name}</strong>.`)
+  //   } else {
+  //     // Add user to channel
+  //     requestedChannel.users.push(user)
+  //     return `Adding user <strong>${user.nickname}</strong> to channel <strong>${channelName}</strong>`
+  //   }
   }
 
   public async quitChannel(channelId: number, user: User) {
@@ -97,13 +77,10 @@ export class ChannelListAdapter {
       return
     }
     if (user.id === channel.admin.id) {
-        console.log(`Channel "${channel.name}" was removed"`)
+      this.channels.delete(channelId)
     } else {
-        console.log(`You do not have a permission to remove channel`)
-        return
-      }
-    console.log('quitChannel');
-    this.channels.delete(channelId)
+      throw new CommandError(`You do not have a permission to remove channel`)
+    }
   }
 
   public async cancelMembership() {
@@ -138,9 +115,9 @@ export class ChannelListAdapter {
     this.channels.set(0, new Channel({
       id: 0, name: "Channel 1", type: "public",
       admin: user1,
-      users: [user1, user3, user4, user5, user6, user7, user8, user9],
+      users: [user1, user2, user3, user4, user5, user6, user7, user8, user9],
       restrictedList: new Map([
-        ['bar', ['asd', 'baz', 'buz']]
+        ['bar', ['asd', 'baz']]
       ]),
       messages: [
         new Message({ user: user1, content: "Lorem ipsum dolor sit amet" }),

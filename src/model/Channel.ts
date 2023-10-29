@@ -1,5 +1,6 @@
 import { InjectionKey, Ref, inject, provide, reactive, toRef } from "vue"
 import { User, UserAdapter } from "./User"
+import { CommandError } from "./CommandError"
 
 
 export type ChannelType = "public" | "private"
@@ -64,7 +65,6 @@ export class ChannelAdapter {
       return
     }
     // TODO: send a notification to removed user
-    console.log(`User "${nickname}" will be removed from "${this._selectedChannel.name}"`);
     this._selectedChannel.users = this._selectedChannel.users.filter(u => u.nickname != nickname)
   }
 
@@ -107,28 +107,22 @@ export class ChannelAdapter {
 
     // non admin user can not ban other users
     if (this._selectedChannel.type === 'private') {
-      console.log('This command can be invoked only in public channel.');
-      return
+      throw new CommandError('This command can be invoked only in public channel.');
     }
 
     // Ban initiator is not a valid member of the current channel
     if (!this.isMember(banInitiator.nickname)) {
-      console.log(`You are are not a member of the channel "${this._selectedChannel.name}"`);
-      // TODO: throw error
-      return
+      throw new CommandError(`You are are not a member of the channel "${this._selectedChannel.name}"`);
     }
 
     // user is not a member of the current channel
     if (!this.isMember(targetUser)) {
-      console.log(`"${targetUser}" is not a valid member of the current channel`);
-      // TODO: throw error
-      return
+      throw new CommandError(`"${targetUser}" is not a valid member of the current channel`);
     }
 
     // user is not allowed to ban himself
     if (banInitiator.nickname === targetUser) {
-      console.log(`You are not allowed to ban yourself`);
-      return
+      throw new CommandError(`You are not allowed to ban yourself`);
     }
 
     // if ban initiator is an admin - remove user from channel
@@ -137,7 +131,6 @@ export class ChannelAdapter {
         targetUser,
         [banInitiator.nickname, banInitiator.nickname, banInitiator.nickname])
       await this.removeUser(targetUser)
-      return
     }
 
     // Target user has not been banned yet
@@ -147,8 +140,7 @@ export class ChannelAdapter {
     } else if (!restrictedList.get(targetUser)?.includes(banInitiator.nickname)) {
       restrictedList.get(targetUser)?.push(banInitiator.nickname)
     } else {
-      console.log(`You had already banned "${targetUser}"`);
-      return
+      throw new CommandError(`You had already banned "${targetUser}"`);
     }
 
     // remove target user from channel if he reached the maximum amount of ban records
@@ -159,33 +151,35 @@ export class ChannelAdapter {
 
   public async inviteMember(inviteInitiator: User, targetUser: string) {
     if (this._selectedChannel == null || targetUser == null) {
-      return
+      return ''
     }
     // channel is private and user is not channel admin
     if (
       this._selectedChannel.type === "private" &&
       !this.isMemberAdmin(inviteInitiator.nickname)
     ) {
-      console.log(`You do not have a permission to invite other users to channel.`)
-      return;
+      throw new CommandError('You do not have a permission to invite other users to channel.')
     }
 
     // TODO: send user invite message
     if (this.isMember(targetUser)) {
-      console.log(`"${targetUser}" is already a member of the current channel`)
-      return;
+      throw new CommandError(`"${targetUser}" is already a member of the current channel`)
     }
 
     if (this.isMemberBanned(targetUser) && !this.isMemberAdmin(inviteInitiator.nickname)) {
-        console.log(`Only admin is allowed to invite a banned user.`)
-        return
+        throw new CommandError(`Only admin is allowed to invite a banned user.`)
     } else {
       // TODO: clear ban record - should be done on server side
       console.log('clearing restricted list for: ', targetUser);
       this._selectedChannel.restrictedList.set(targetUser, [])
     }
+    // FIXME: only for testing purposes (fake user)
+    const user = new User({ id: 1000, nickname: targetUser, state: "online" })
+    this._selectedChannel.users.push(user)
+
     // TODO: API call
-    console.log(`Inviting ${targetUser} to current channel.`)
+    return `Inviting ${targetUser} to current channel.`
+
   }
 
   public async clearRestrictedRecord(nickname: string, banInitiator: User) {
