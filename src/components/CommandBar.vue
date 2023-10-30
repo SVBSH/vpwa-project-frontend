@@ -45,7 +45,7 @@ export default defineComponent({
           const commandMessage = await commandParser.parse(message)
           console.log(commandMessage);
 
-          if (commandMessage !== '') {
+          if (commandMessage != null) {
             quasar.notify({
               type: "positive",
               html: true,
