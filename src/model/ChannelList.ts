@@ -1,9 +1,8 @@
 import { InjectionKey, Ref, inject, onUnmounted, provide, reactive, ref, watch } from "vue"
-import { Channel, Message, useChannelAdapter } from "./Channel"
-import { User } from "./User"
-import { ChannelType } from "./Channel"
+import { Channel, ChannelType, Message, useChannelAdapter } from "./Channel"
 import { CommandError } from "./CommandError"
-const CHANNEL_LIST_KEY = Symbol() as InjectionKey<ChannelListAdapter>
+import { User } from "./User"
+const CHANNEL_LIST_KEY = Symbol("channel-list-key") as InjectionKey<ChannelListAdapter>
 
 // FIXME: will be replaced with an API call
 let channelId = 2
@@ -20,16 +19,16 @@ export class ChannelListAdapter {
     return this.channels.get(id)
   }
 
-  public async addChannel(channelName: string, channelType: ChannelType,  user: User) {
+  public async addChannel(channelName: string, channelType: ChannelType, user: User) {
     if (channelName == null || channelName.length == 0) {
       return
     }
     // if channel already exist
     if (this.getChannelByName(channelName) != null) {
-      throw new CommandError('This channel already exist')
+      throw new CommandError("This channel already exist")
     }
 
-    channelId++;
+    channelId++
 
     const newChannel = new Channel({
       id: channelId,
@@ -37,38 +36,38 @@ export class ChannelListAdapter {
       type: channelType,
       admin: user,
       users: [user],
-      messages: [],
+      messages: []
     })
     this.channels.set(channelId, newChannel)
     return newChannel
   }
 
   public async joinChannel(channelName: string, channelType: ChannelType, user: User) {
-  //   const requestedChannel = this.getChannelByName(channelName);
-  //   const channelAdapter = useChannelAdapter()
-  //    // Create a new channel
-  //   if (requestedChannel == null) {
-  //     // TODO: try to create a channel
-  //     const newChannel = await this.addChannel(
-  //       channelName,
-  //       channelType,
-  //       user
-  //     );
-  //     if (newChannel == undefined) {
-  //       return '';
-  //     }
-  //     return `Creating channel <strong>${channelName}</strong>`
-  //   } else if (requestedChannel.type != "public") {
-  //     throw new CommandError(`You could not join to requested channel because <strong>${channelName}</strong> is not a public channel.`)
-  //   } else if (channelAdapter.isMember(user.nickname)) {
-  //     throw new CommandError(`You are <strong>${user.nickname}</strong> already a member of channel <strong>${requestedChannel.name}</strong>.`)
-  //   } else if (channelAdapter.isMemberBanned(user.nickname)) {
-  //     throw new CommandError(`<strong>${user.nickname}</strong> is banned from channel <strong>${requestedChannel.name}</strong>.`)
-  //   } else {
-  //     // Add user to channel
-  //     requestedChannel.users.push(user)
-  //     return `Adding user <strong>${user.nickname}</strong> to channel <strong>${channelName}</strong>`
-  //   }
+    //   const requestedChannel = this.getChannelByName(channelName);
+    //   const channelAdapter = useChannelAdapter()
+    //    // Create a new channel
+    //   if (requestedChannel == null) {
+    //     // TODO: try to create a channel
+    //     const newChannel = await this.addChannel(
+    //       channelName,
+    //       channelType,
+    //       user
+    //     );
+    //     if (newChannel == undefined) {
+    //       return '';
+    //     }
+    //     return `Creating channel <strong>${channelName}</strong>`
+    //   } else if (requestedChannel.type != "public") {
+    //     throw new CommandError(`You could not join to requested channel because <strong>${channelName}</strong> is not a public channel.`)
+    //   } else if (channelAdapter.isMember(user.nickname)) {
+    //     throw new CommandError(`You are <strong>${user.nickname}</strong> already a member of channel <strong>${requestedChannel.name}</strong>.`)
+    //   } else if (channelAdapter.isMemberBanned(user.nickname)) {
+    //     throw new CommandError(`<strong>${user.nickname}</strong> is banned from channel <strong>${requestedChannel.name}</strong>.`)
+    //   } else {
+    //     // Add user to channel
+    //     requestedChannel.users.push(user)
+    //     return `Adding user <strong>${user.nickname}</strong> to channel <strong>${channelName}</strong>`
+    //   }
   }
 
   public async quitChannel(channelId: number, user: User) {
@@ -79,18 +78,18 @@ export class ChannelListAdapter {
     if (user.id === channel.admin.id) {
       this.channels.delete(channelId)
     } else {
-      throw new CommandError(`You do not have a permission to remove channel`)
+      throw new CommandError("You do not have a permission to remove channel")
     }
   }
 
   public async cancelMembership() {
-    console.log('cancelMembership');
+    console.log("cancelMembership")
   }
 
   public getChannelByName(name: string): Channel | null {
-    for (const [_, channel] of this.channels ) {
-       if (channel.name == name) {
-        return  channel
+    for (const [_, channel] of this.channels) {
+      if (channel.name == name) {
+        return channel
       }
     }
     return null
@@ -111,28 +110,31 @@ export class ChannelListAdapter {
     const user8 = new User({ id: 8, nickname: "wasas", state: "online" })
     const user9 = new User({ id: 9, nickname: "rtrtr", state: "online" })
 
-
     this.channels.set(0, new Channel({
-      id: 0, name: "Channel 1", type: "public",
+      id: 0,
+      name: "Channel 1",
+      type: "public",
       admin: user1,
       users: [user1, user2, user3, user4, user5, user6, user7, user8, user9],
       restrictedList: new Map([
-        ['bar', ['asd', 'baz']],
-        ['456', ['asd', 'baz', 'wasas']]
+        ["bar", ["asd", "baz"]],
+        ["456", ["asd", "baz", "wasas"]]
       ]),
       messages: [
         new Message({ user: user1, content: "Lorem ipsum dolor sit amet" }),
         new Message({ user: user2, content: "consectetur adipisicing elit" }),
         new Message({ user: user3, content: "Beatae, ea at cupiditate quisquam voluptatem modi" }),
-        new Message({ user: user1, content: "neque voluptates omnis est ipsam" }),
+        new Message({ user: user1, content: "neque voluptates omnis est ipsam" })
       ]
     }))
     this.channels.set(1, new Channel({
-      id: 1, name: "Channel 2", type: "private",
+      id: 1,
+      name: "Channel 2",
+      type: "private",
       admin: user2,
       users: [user1],
       messages: [
-        new Message({ user: user1, content: "Lorem ipsum dolor sit amet" }),
+        new Message({ user: user1, content: "Lorem ipsum dolor sit amet" })
       ]
     }))
     // Mock for user typing

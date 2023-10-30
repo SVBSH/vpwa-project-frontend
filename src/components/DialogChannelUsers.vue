@@ -17,10 +17,9 @@
 </template>
 
 <script setup lang="ts">
-import { useDialogPluginComponent } from 'quasar'
-import { User } from 'src/model/User';
-import ChannelUser from './ChannelUser.vue';
-
+import { useDialogPluginComponent } from "quasar"
+import { User } from "src/model/User"
+import ChannelUser from "./ChannelUser.vue"
 
 const props = defineProps({
   channelUsers: {

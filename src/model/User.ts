@@ -19,7 +19,7 @@ export class User {
   }
 }
 
-const USER_KEY = Symbol() as InjectionKey<UserAdapter>
+const USER_KEY = Symbol("user-key") as InjectionKey<UserAdapter>
 
 export class UserAdapter {
   protected readonly _router
@@ -62,7 +62,7 @@ export class UserAdapter {
     if (this._user == null) {
       throw new Error("User does not exist")
     }
-    this._user.state = state;
+    this._user.state = state
   }
 
   constructor() {
@@ -73,7 +73,6 @@ export class UserAdapter {
     if (savedUser) {
       this._user = new User(JSON.parse(savedUser))
     }
-
   }
 }
 

@@ -28,29 +28,28 @@
 </template>
 
 <script lang="ts">
-import { useUserAdapter } from "src/model/User";
-import { defineComponent, computed } from "vue";
-import { UserState, USER_STATE } from "src/model/User";
+import { useUserAdapter, UserState, USER_STATE } from "src/model/User"
+import { defineComponent, computed } from "vue"
 
 export default defineComponent({
-  setup(props, ctx) {
-    const userAdapter = useUserAdapter();
-    const user = userAdapter.getCurrentUser();
+  setup (props, ctx) {
+    const userAdapter = useUserAdapter()
+    const user = userAdapter.getCurrentUser()
 
-    function logout() {
-      userAdapter.logout();
+    function logout () {
+      userAdapter.logout()
     }
 
-    function changeUserState(state: UserState) {
-      userAdapter.setUserState(state);
+    function changeUserState (state: UserState) {
+      userAdapter.setUserState(state)
     }
     const inactiveUserState = computed(() =>
       USER_STATE.filter((state) => state != user.state)
-    );
+    )
 
-    return { user, logout, changeUserState, inactiveUserState };
-  },
-});
+    return { user, logout, changeUserState, inactiveUserState }
+  }
+})
 </script>
 
 <style scoped>

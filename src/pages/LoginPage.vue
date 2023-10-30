@@ -1,7 +1,6 @@
 <template>
   <q-layout view="hHh lpR lFf">
 
-
     <q-page-container class="justify-center flex items-center">
       <q-card flat bordered class="my-login-view q-ma-md">
         <q-card-section>
@@ -46,7 +45,7 @@ export default defineComponent({
   setup(props, ctx) {
     const quasar = useQuasar()
     const user = ref(new User({ name: "Janko", surname: "Mrkvicka", nickname: "user-1", password: "12345" }))
-    const inputRules = [(val: string) => val && val.length > 0 || "Please type something"]
+    const inputRules = [(val: string) => (val && val.length > 0) || "Please type something"]
     const userAdapter = useUserAdapter()
     const route = useRoute()
     const router = useRouter()
@@ -78,6 +77,6 @@ export default defineComponent({
     }
 
     return { handleSubmit, user, inputRules, isRegister, setLogin, setRegister }
-  },
+  }
 })
 </script>
