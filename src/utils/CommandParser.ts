@@ -47,7 +47,7 @@ export default class CommandParser {
   }
 
   private async processCommand(command: string, args: string[]) {
-    let commandMessage = ''
+    let commandMessage: string | null = null
     switch (command) {
       case 'list': {
         if (this.channel.selectedChannel == null) {
@@ -133,7 +133,7 @@ export default class CommandParser {
         currentUser
       );
       if (newChannel == undefined) {
-        return '';
+        return null;
       }
       await this.selectChannel(newChannel.id);
       return `Creating channel <strong>${channelName}</strong>`
@@ -170,7 +170,7 @@ export default class CommandParser {
         return `Removing user from channel <strong>${this.channel.selectedChannel.name}</strong>`;
       }
     }
-    return ''
+    return null
   }
 
   private async commandKick(args: string[]) {
@@ -193,7 +193,7 @@ export default class CommandParser {
     const nickname = args[0]
 
     if (this.channel.selectedChannel == null) {
-      return ''
+      return null
     }
 
     if (this.channel.selectedChannel.type === "public") {
@@ -217,10 +217,10 @@ export default class CommandParser {
       component: DialogChannelUsers,
 
       componentProps: {
-        channelUsers: this.channel.selectedChannel?.users,
+        channelUsers: this.channel.selectedChannel!.users,
       }
     })
-    return ''
+    return null
   }
 
   /**
@@ -232,7 +232,7 @@ export default class CommandParser {
       throw new CommandError('Invalid command')
     }
     if (this.channel.selectedChannel == null) {
-      return ''
+      return null
     }
     const user: User = this.userAdapter.getCurrentUser();
     await this.channelListAdapter.quitChannel(this.channel.selectedChannel.id, user)
@@ -249,7 +249,7 @@ export default class CommandParser {
     const user: User = this.userAdapter.getCurrentUser();
     const nickname: string = args[0];
     if (this.channel.selectedChannel == null) {
-      return '';
+      return null;
     }
     const message = this.channel.inviteMember(user, nickname)
     return message
