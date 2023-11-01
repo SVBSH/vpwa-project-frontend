@@ -1,7 +1,9 @@
+import { Channel, ChannelType } from "src/contracts/Channel"
+import { Message } from "src/contracts/Message"
+import { User } from "src/contracts/User"
 import { InjectionKey, Ref, inject, onUnmounted, provide, reactive, ref, watch } from "vue"
-import { Channel, ChannelType, Message, useChannelAdapter } from "./Channel"
-import { CommandError } from "./CommandError"
-import { User } from "./User"
+import { useChannelAdapter } from "./ChannelAdapter"
+import { CommandError } from "./errors"
 const CHANNEL_LIST_KEY = Symbol("channel-list-key") as InjectionKey<ChannelListAdapter>
 
 // FIXME: will be replaced with an API call

@@ -42,8 +42,8 @@
 
 <script lang="ts">
 import { QBtn } from "quasar"
-import { useChannel } from "src/model/Channel"
-import { User } from "src/model/User"
+import { User } from "src/contracts/User"
+import { useChannel } from "src/services/ChannelAdapter"
 import { VNode, computed, defineComponent, h, shallowRef } from "vue"
 
 export default defineComponent({

@@ -1,9 +1,11 @@
 import { QVueGlobals, useQuasar } from "quasar"
 import DialogChannelUsers from "src/components/DialogChannelUsers.vue"
-import { ChannelAdapter, ChannelType, useChannelAdapter } from "src/model/Channel"
-import { ChannelListAdapter, useChannelList } from "src/model/ChannelList"
-import { CommandError } from "src/model/CommandError"
-import { User, UserAdapter, useUserAdapter } from "src/model/User"
+import { ChannelType } from "src/contracts/Channel"
+import { User } from "src/contracts/User"
+import { ChannelAdapter, useChannelAdapter } from "src/services/ChannelAdapter"
+import { ChannelListAdapter, useChannelList } from "src/services/ChannelListAdapter"
+import { UserAdapter, useUserAdapter } from "src/services/UserAdapter"
+import { CommandError } from "src/services/errors"
 import { Router, useRouter } from "vue-router"
 
 export default class CommandParser {

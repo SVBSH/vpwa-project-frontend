@@ -4,9 +4,9 @@
 
 <script lang="ts">
 import { defineComponent } from "vue"
-import { ChannelAdapter } from "./model/Channel"
-import { ChannelListAdapter } from "./model/ChannelList"
-import { UserAdapter } from "./model/User"
+import { ChannelAdapter } from "./services/ChannelAdapter"
+import { ChannelListAdapter } from "./services/ChannelListAdapter"
+import { UserAdapter } from "./services/UserAdapter"
 
 export default defineComponent({
   name: "App",

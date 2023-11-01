@@ -1,35 +1,9 @@
+import { Channel } from "src/contracts/Channel"
+import { Message } from "src/contracts/Message"
+import { User } from "src/contracts/User"
+import { CommandError } from "src/services/errors"
 import { InjectionKey, Ref, inject, provide, reactive, toRef } from "vue"
-import { CommandError } from "./CommandError"
-import { User, UserAdapter } from "./User"
-
-export type ChannelType = "public" | "private"
-export type RestrictedList = Map<string, string[]>
-
-export class Message {
-  public id = 0
-  public user: User = null!
-  public content = ""
-
-  constructor(opt?: Partial<Message>) {
-    if (opt) Object.assign(this, opt)
-  }
-}
-
-export class Channel {
-  public id = 0
-  public name = ""
-  public messages: Message[] = []
-  public users: User[] = []
-  public usersTyping = new Map<User, string>()
-  public admin: User = null!
-  public type: ChannelType = "public"
-  public restrictedList: RestrictedList = new Map<string, string[]>()
-
-  constructor(opt?: Partial<Channel>) {
-    if (opt) Object.assign(this, opt)
-    return reactive(this)
-  }
-}
+import { UserAdapter } from "./UserAdapter"
 
 const CHANNEL_ADAPTER_KEY = Symbol("channel-adapter-key") as InjectionKey<ChannelAdapter>
 

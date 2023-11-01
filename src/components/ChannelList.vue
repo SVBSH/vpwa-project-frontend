@@ -16,17 +16,17 @@
 </template>
 
 <script lang="ts">
-import { useChannelList } from "src/model/ChannelList"
+import { useChannelAdapter } from "src/services/ChannelAdapter"
+import { useChannelList } from "src/services/ChannelListAdapter"
 import { defineComponent } from "vue"
-import { useChannelAdapter } from "src/model/Channel"
 import { useRouter } from "vue-router"
 export default defineComponent({
-  setup (props, ctx) {
+  setup(props, ctx) {
     const channelList = useChannelList()
     const channelAdapter = useChannelAdapter()
     const router = useRouter()
 
-    async function selectChannel (channelId: number) {
+    async function selectChannel(channelId: number) {
       const reqChannel = await channelList.getChannel(channelId)
       if (reqChannel != undefined) {
         channelAdapter.setSelectedChannel(reqChannel)

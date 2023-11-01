@@ -8,7 +8,7 @@
 <script lang="ts">
 import { useQuasar } from "quasar"
 import ChannelView from "src/components/ChannelView.vue"
-import { useChannelLoader } from "src/model/ChannelList"
+import { useChannelLoader } from "src/services/ChannelListAdapter"
 import { computed, defineComponent, watch } from "vue"
 import { useRoute } from "vue-router"
 

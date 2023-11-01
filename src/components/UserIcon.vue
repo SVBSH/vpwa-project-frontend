@@ -28,8 +28,9 @@
 </template>
 
 <script lang="ts">
-import { useUserAdapter, UserState, USER_STATE } from "src/model/User"
-import { defineComponent, computed } from "vue"
+import { USER_STATE, UserState } from "src/contracts/User"
+import { useUserAdapter } from "src/services/UserAdapter"
+import { computed, defineComponent } from "vue"
 
 export default defineComponent({
   setup (props, ctx) {

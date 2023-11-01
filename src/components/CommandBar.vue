@@ -10,8 +10,8 @@
 
 <script lang="ts">
 import { useQuasar } from "quasar"
-import { useChannelAdapter } from "src/model/Channel"
-import { CommandError } from "src/model/CommandError"
+import { useChannelAdapter } from "src/services/ChannelAdapter"
+import { CommandError } from "src/services/errors"
 import CommandParser from "src/utils/CommandParser"
 import { defineComponent, ref } from "vue"
 export default defineComponent({

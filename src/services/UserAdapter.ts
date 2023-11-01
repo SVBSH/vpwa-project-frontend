@@ -1,23 +1,7 @@
-import { InjectionKey, inject, provide, reactive } from "vue"
+import { User, UserState } from "src/contracts/User"
+import { FormError } from "src/services/errors"
+import { InjectionKey, inject, provide } from "vue"
 import { useRouter } from "vue-router"
-import { FormError } from "./FormError"
-
-export type UserState = typeof USER_STATE[number]
-export const USER_STATE = ["online", "offline", "dnd"] as const
-
-export class User {
-  public id = 0
-  public name = ""
-  public surname = ""
-  public nickname = ""
-  public password = ""
-  public state: UserState = "online"
-
-  constructor(opt?: Partial<User>) {
-    if (opt) Object.assign(this, opt)
-    return reactive(this)
-  }
-}
 
 const USER_KEY = Symbol("user-key") as InjectionKey<UserAdapter>
 

@@ -36,8 +36,9 @@
 
 <script lang="ts">
 import { useQuasar } from "quasar"
-import { FormError } from "src/model/FormError"
-import { User, useUserAdapter } from "src/model/User"
+import { User } from "src/contracts/User"
+import { useUserAdapter } from "src/services/UserAdapter"
+import { FormError } from "src/services/errors"
 import { defineComponent, ref } from "vue"
 import { useRoute, useRouter } from "vue-router"
 

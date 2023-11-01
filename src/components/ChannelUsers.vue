@@ -8,7 +8,7 @@
 </template>
 
 <script lang="ts">
-import { useChannel } from "src/model/Channel"
+import { useChannel } from "src/services/ChannelAdapter"
 import { defineComponent } from "vue"
 import ChannelUser from "./ChannelUser.vue"
 

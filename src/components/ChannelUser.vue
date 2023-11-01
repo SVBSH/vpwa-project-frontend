@@ -8,7 +8,7 @@
 </template>
 
 <script lang="ts">
-import { User } from "src/model/User"
+import { User } from "src/contracts/User"
 import { defineComponent } from "vue"
 export default defineComponent({
   props: {
