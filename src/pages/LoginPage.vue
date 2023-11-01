@@ -13,6 +13,7 @@
             <q-input key="surname" v-if="isRegister" filled v-model="user.surname" label="Surname" lazy-rules :rules="inputRules" />
             <q-input key="nickname" filled v-model="user.nickname" label="Nickname" lazy-rules :rules="inputRules" />
             <q-input key="password" filled v-model="user.password" label="Password" type="password" lazy-rules :rules="inputRules" />
+            <q-input key="email" v-if="isRegister" filled v-model="user.email" label="E-Mail" type="email" lazy-rules :rules="inputRules" />
 
             <div>
               <q-btn :label="isRegister ? 'Register' : 'Login'" type="submit" color="primary" />
@@ -45,7 +46,7 @@ import { useRoute, useRouter } from "vue-router"
 export default defineComponent({
   setup(props, ctx) {
     const quasar = useQuasar()
-    const user = ref(new User({ name: "Janko", surname: "Mrkvicka", nickname: "user-1", password: "12345" }))
+    const user = ref(new User({ name: "Janko", surname: "Mrkvicka", nickname: "user-1", password: "12345", email: "user@example.com" }))
     const inputRules = [(val: string) => (val && val.length > 0) || "Please type something"]
     const userAdapter = useUserAdapter()
     const route = useRoute()

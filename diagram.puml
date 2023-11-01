@@ -13,6 +13,7 @@ Class "User" as rUser {
     * surname : string
     * nickname: string
     * password: string
+    * email: string
     * state: userState
 }
 

@@ -1,9 +1,9 @@
+import { api } from "src/boot/axios"
 import { Channel } from "src/contracts/Channel"
 import { Message } from "src/contracts/Message"
 import { User } from "src/contracts/User"
 import { CommandError } from "src/services/errors"
 import { InjectionKey, Ref, inject, provide, reactive, toRef } from "vue"
-import { UserAdapter } from "./UserAdapter"
 
 const CHANNEL_ADAPTER_KEY = Symbol("channel-adapter-key") as InjectionKey<ChannelAdapter>
 
@@ -16,16 +16,14 @@ export class ChannelAdapter {
 
   public sendMessage(content: string) {
     if (this._selectedChannel == null) return
-    const currentUser = this._userAdapter.getCurrentUser()
+    const currentUser = api.userAdapter.getCurrentUser()
 
     this._selectedChannel.messages.push(new Message({ id: Date.now(), content, user: currentUser }))
   }
 
   protected _selectedChannel: Channel | null = null
 
-  constructor(
-    protected readonly _userAdapter: UserAdapter
-  ) {
+  constructor() {
     const self = reactive(this) as this
     provide(CHANNEL_ADAPTER_KEY, self)
     return self
