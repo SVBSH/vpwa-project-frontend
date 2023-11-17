@@ -7,11 +7,13 @@ import { defineComponent, ref } from "vue"
 import { ChannelAdapter } from "./services/ChannelAdapter"
 import { ChannelListAdapter } from "./services/ChannelListAdapter"
 import { UserAdapter } from "./services/UserAdapter"
+import { SocketManager } from "./services/SocketManager"
 
 export default defineComponent({
   name: "App",
   setup(props, ctx) {
-    const userAdapter = new UserAdapter()
+    const socket = new SocketManager()
+    const userAdapter = new UserAdapter(socket)
     new ChannelListAdapter()
     new ChannelAdapter()
 

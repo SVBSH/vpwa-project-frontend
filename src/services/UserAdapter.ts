@@ -4,6 +4,7 @@ import { ApiToken, User, UserData, UserState } from "src/contracts/User"
 import { FormError } from "src/services/errors"
 import { InjectionKey, inject, provide } from "vue"
 import { useRouter } from "vue-router"
+import { SocketManager } from "./SocketManager"
 
 const USER_KEY = Symbol("user-key") as InjectionKey<UserAdapter>
 
@@ -38,7 +39,7 @@ export class UserAdapter {
     }
 
     this._token = response.data.token
-    this._saveToken()
+    this._handleStateChange()
     await this.initCurrentUser()
   }
 
@@ -63,7 +64,7 @@ export class UserAdapter {
     }
 
     this._token = response.data.token
-    this._saveToken()
+    this._handleStateChange()
     await this.initCurrentUser()
   }
 
@@ -81,11 +82,12 @@ export class UserAdapter {
         const response = await api.get<UserData>("/api/auth/me")
         this._user = new User(response.data.user)
         // TODO: Add user channels to ChannelList
+        this._handleStateChange()
       } catch (err) {
         if (err instanceof AxiosError) {
           // Token is invalid
           this._token = null
-          this._saveToken()
+          this._handleStateChange()
         } else {
           throw err
         }
@@ -102,11 +104,13 @@ export class UserAdapter {
     })
   }
 
-  protected _saveToken() {
+  protected _handleStateChange() {
     if (this._token == null) {
       localStorage.removeItem("user-token")
+      this._socket.close()
     } else {
       localStorage.setItem("user-token", this._token)
+      this._socket.open()
     }
   }
 
@@ -117,7 +121,9 @@ export class UserAdapter {
     this._user.state = state
   }
 
-  constructor() {
+  constructor(
+    protected readonly _socket: SocketManager
+  ) {
     provide(USER_KEY, this)
     this._router = useRouter()
 
