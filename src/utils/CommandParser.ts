@@ -129,15 +129,9 @@ export default class CommandParser {
       this.channel.selectedChannel != null &&
       this.channel.selectedChannel.admin != null
     ) {
-      if (this.channel.isMemberAdmin(user.nickname)) {
-        this.channelListAdapter.channels.delete(this.channel.selectedChannel.id)
-        this.router.push("/")
-        return `Removing channel <strong>${this.channel.selectedChannel.name}</strong>`
-      } else {
-        await this.channel.removeUser(user.nickname)
-        this.router.push("/")
-        return `Removing user from channel <strong>${this.channel.selectedChannel.name}</strong>`
-      }
+      const response = await this.channel.removeUser(this.channel.selectedChannel.id)
+      this.router.push("/")
+      return response
     }
     return null
   }
@@ -173,8 +167,8 @@ export default class CommandParser {
       throw new CommandError("Your are not allowed to add user to this channel")
     }
 
-    // TODO: message removed user..
-    await this.channel.removeUser(nickname)
+    // FIXME:
+    // await this.channel.removeUser(nickname)
     return `User "${nickname}" will be removed from "${this.channel.selectedChannel.name}"`
   }
 
@@ -203,10 +197,11 @@ export default class CommandParser {
     if (this.channel.selectedChannel == null) {
       return null
     }
-    const user: User = this.userAdapter.getCurrentUser()
-    await this.channelListAdapter.quitChannel(this.channel.selectedChannel.id, user)
+    console.log(this.channel.selectedChannel.id)
+
+    const respose = await this.channelListAdapter.quitChannel(this.channel.selectedChannel.id)
     this.router.push("/")
-    return `Channel <strong>${this.channel.selectedChannel.name}</strong> was removed"`
+    return respose
   }
 
   // TODO: vymazat zoznam uzivatel v restrictedList
