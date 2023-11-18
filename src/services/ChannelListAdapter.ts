@@ -8,9 +8,6 @@ import { api } from "src/boot/axios"
 import axios from "axios"
 const CHANNEL_LIST_KEY = Symbol("channel-list-key") as InjectionKey<ChannelListAdapter>
 
-// FIXME: will be replaced with an API call
-let channelId = 2
-
 export class ChannelListAdapter {
   public channels = new Map<number, Channel>([])
 
@@ -38,29 +35,6 @@ export class ChannelListAdapter {
     return partialChannel
   }
 
-  public async addChannel(channelName: string, channelType: ChannelType, user: User) {
-    if (channelName == null || channelName.length == 0) {
-      return
-    }
-    // if channel already exist
-    if (this.getChannelByName(channelName) != null) {
-      throw new CommandError("This channel already exist")
-    }
-
-    channelId++
-
-    const newChannel = new Channel({
-      id: channelId,
-      name: channelName,
-      type: channelType,
-      admin: user,
-      users: [user],
-      messages: []
-    })
-    this.channels.set(channelId, newChannel)
-    return newChannel
-  }
-
   public async joinChannel(chName: string, channelType: ChannelType) {
     try {
       const response = await api.post("/api/channel/join", { channelName: chName, isPublic: channelType === "public" })
@@ -72,20 +46,15 @@ export class ChannelListAdapter {
     }
   }
 
-  public async quitChannel(channelId: number, user: User) {
-    const channel = await this.getChannel(channelId)
-    if (channel == undefined) {
-      return
+  public async quitChannel(channelId: number) {
+    try {
+      const response = await api.delete(`/api/channel/${channelId}/quit`)
+      return response.data.message
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        throw new CommandError(error.response.data.message)
+      }
     }
-    if (user.id === channel.admin.id) {
-      this.channels.delete(channelId)
-    } else {
-      throw new CommandError("You do not have a permission to remove channel")
-    }
-  }
-
-  public async cancelMembership() {
-    console.log("cancelMembership")
   }
 
   public getChannelByName(name: string): Channel | null {
