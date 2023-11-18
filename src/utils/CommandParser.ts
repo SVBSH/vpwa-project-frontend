@@ -116,34 +116,8 @@ export default class CommandParser {
     } else {
       channelName = args.slice(0, args.length).join(" ")
     }
-    const requestedChannel = this.channelListAdapter.getChannelByName(channelName)
-    const currentUser: User = this.userAdapter.getCurrentUser()
-
-    // Create a new channel
-    if (requestedChannel == null) {
-      // TODO: try to create a channel
-      const newChannel = await this.channelListAdapter.addChannel(
-        channelName,
-        channelType,
-        currentUser
-      )
-      if (newChannel == undefined) {
-        return null
-      }
-      await this.selectChannel(newChannel.id)
-      return `Creating channel <strong>${channelName}</strong>`
-    } else if (requestedChannel.type != "public") {
-      throw new CommandError(`You could not join to <strong>${channelName}</strong> because it is a private channel.`)
-    } else if (this.channel.isMember(currentUser.nickname)) {
-      throw new CommandError(`You are <strong>${currentUser.nickname}</strong> already a member of channel <strong>${requestedChannel.name}</strong>.`)
-    } else if (this.channel.isMemberBanned(currentUser.nickname)) {
-      throw new CommandError(`<strong>${currentUser.nickname}</strong> is banned from channel <strong>${requestedChannel.name}</strong>.`)
-    } else {
-      // Add user to channel
-      requestedChannel.users.push(currentUser)
-      await this.selectChannel(requestedChannel.id)
-      return `Adding user <strong>${currentUser.nickname}</strong> to channel <strong>${channelName}</strong>`
-    }
+    const response = await this.channelListAdapter.joinChannel(channelName, channelType)
+    return `${response}`
   }
 
   private async commandCancel(args: string[]) {
