@@ -1,3 +1,4 @@
+import axios from "axios"
 import { api } from "src/boot/axios"
 import { Channel } from "src/contracts/Channel"
 import { Message } from "src/contracts/Message"
@@ -29,12 +30,15 @@ export class ChannelAdapter {
     return self
   }
 
-  public async removeUser(nickname: string) {
-    if (this._selectedChannel == null) {
-      return
+  public async removeUser(channelId: number) {
+    try {
+      const response = await api.delete(`/api/channel/${channelId}/cancel`)
+      return response.data.message
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        throw new CommandError(error.response.data.message)
+      }
     }
-    // TODO: send a notification to removed user
-    this._selectedChannel.users = this._selectedChannel.users.filter(u => u.nickname != nickname)
   }
 
   public loadMessages() {
@@ -98,7 +102,8 @@ export class ChannelAdapter {
       restrictedList.set(
         targetUser,
         [banInitiator.nickname, banInitiator.nickname, banInitiator.nickname])
-      await this.removeUser(targetUser)
+      // FIXME:
+      // await this.removeUser(targetUser)
     }
 
     // Target user has not been banned yet
@@ -113,7 +118,8 @@ export class ChannelAdapter {
 
     // remove target user from channel if he reached the maximum amount of ban records
     if (this.isMemberBanned(targetUser)) {
-      await this.removeUser(targetUser)
+      // FIXME:
+      // await this.removeUser(targetUser)
     }
   }
 
