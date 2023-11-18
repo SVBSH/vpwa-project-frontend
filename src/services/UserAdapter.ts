@@ -5,6 +5,8 @@ import { FormError } from "src/services/errors"
 import { InjectionKey, inject, provide } from "vue"
 import { useRouter } from "vue-router"
 import { SocketManager } from "./SocketManager"
+import { ChannelListAdapter } from "./ChannelListAdapter"
+import { Channel } from "src/contracts/Channel"
 
 const USER_KEY = Symbol("user-key") as InjectionKey<UserAdapter>
 
@@ -80,7 +82,15 @@ export class UserAdapter {
     if (this._token != null) {
       try {
         const response = await api.get<UserData>("/api/auth/me")
+        const channelList = new Map<number, Channel>([])
+
         this._user = new User(response.data.user)
+        response.data.channels.forEach((channel: Channel) => {
+          channelList.set(channel.id, channel)
+        })
+
+        this._channelListAdapter.channels = channelList
+
         // TODO: Add user channels to ChannelList
         this._handleStateChange()
       } catch (err) {
@@ -122,7 +132,8 @@ export class UserAdapter {
   }
 
   constructor(
-    protected readonly _socket: SocketManager
+    protected readonly _socket: SocketManager,
+    protected readonly _channelListAdapter: ChannelListAdapter
   ) {
     provide(USER_KEY, this)
     this._router = useRouter()
