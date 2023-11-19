@@ -215,7 +215,7 @@ export default class CommandParser {
     if (this.channel.selectedChannel == null) {
       return null
     }
-    const message = this.channel.inviteMember(user, nickname)
+    const message = await this.channel.inviteMember(user, nickname)
     return message
   }
 }
