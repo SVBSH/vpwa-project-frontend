@@ -1,4 +1,4 @@
-import { Channel, ChannelData, ChannelType } from "src/contracts/Channel"
+import { Channel, ChannelType } from "src/contracts/Channel"
 import { Message } from "src/contracts/Message"
 import { User } from "src/contracts/User"
 import { InjectionKey, Ref, inject, onUnmounted, provide, reactive, ref, watch } from "vue"
@@ -17,7 +17,7 @@ export class ChannelListAdapter {
    * fetches the user list and a list of messages.
    * */
   public async getChannel(id: number) {
-    const response = await api.get<ChannelData>(`/api/channel/${id}`)
+    const response = await api.get<Channel>(`/api/channel/${id}`)
 
     const partialChannel = this.channels.get(id)
     if (partialChannel) {
@@ -28,7 +28,7 @@ export class ChannelListAdapter {
       partialChannel.messages = response.data.messages.map(message => {
         return new Message({
           ...message,
-          user: response.data.users.find(user => user.id === message.author)
+          user: response.data.users.find(user => user.id === message.user.id)
         })
       })
     }
