@@ -86,7 +86,7 @@ export class UserAdapter {
 
         this._user = new User(response.data.user)
         response.data.channels.forEach((channel: Channel) => {
-          channelList.set(channel.id, channel)
+          channelList.set(channel.id, new Channel(channel))
         })
 
         this._channelListAdapter.channels = channelList
