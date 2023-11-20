@@ -1,32 +1,39 @@
 import axios from "axios"
 import { api } from "src/boot/axios"
 import { Channel } from "src/contracts/Channel"
-import { Message } from "src/contracts/Message"
 import { User } from "src/contracts/User"
 import { CommandError } from "src/services/errors"
 import { InjectionKey, Ref, inject, provide, reactive, toRef } from "vue"
+import { SocketManager } from "./SocketManager"
 
 const CHANNEL_ADAPTER_KEY = Symbol("channel-adapter-key") as InjectionKey<ChannelAdapter>
 
 export class ChannelAdapter {
   public get selectedChannel() { return this._selectedChannel }
-  // Explicit setter required for setting up websocket subscriptions later
+
   public setSelectedChannel(channel: Channel | null) {
     this._selectedChannel = channel
   }
 
   public sendMessage(content: string) {
     if (this._selectedChannel == null) return
-    const currentUser = api.userAdapter.getCurrentUser()
-
-    this._selectedChannel.messages.push(new Message({ id: Date.now(), content, user: currentUser }))
+    this._socket.sendMessage(this._selectedChannel, content)
   }
 
   protected _selectedChannel: Channel | null = null
 
-  constructor() {
+  constructor(
+    protected _socket: SocketManager
+  ) {
     const self = reactive(this) as this
     provide(CHANNEL_ADAPTER_KEY, self)
+
+    this._socket.on("channel_remove", event => {
+      if (self._selectedChannel?.id == event) {
+        self.setSelectedChannel(null)
+      }
+    })
+
     return self
   }
 

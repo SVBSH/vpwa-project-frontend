@@ -1,12 +1,17 @@
 import { Emitter } from "@socket.io/component-emitter"
 import { Socket, io } from "socket.io-client"
 import { api } from "src/boot/axios"
-import { Channel } from "src/contracts/Channel"
+import { Channel, UserAddMessage, UserRemoveMessage } from "src/contracts/Channel"
 import { ChannelMessage, RawMessage } from "src/contracts/Message"
-import { UserState } from "src/contracts/User"
+import { User, UserState } from "src/contracts/User"
+import { markRaw } from "vue"
 
 interface SocketManagerEvents {
   "channel_message": (event: ChannelMessage) => void
+  "channel_add": (event: Channel) => void
+  "channel_remove": (event: number) => void
+  "user_add": (event: UserAddMessage) => void
+  "user_remove": (event: UserRemoveMessage) => void
 }
 
 export class SocketManager extends Emitter<SocketManagerEvents, SocketManagerEvents, Record<never, never>> {
@@ -30,6 +35,26 @@ export class SocketManager extends Emitter<SocketManagerEvents, SocketManagerEve
       console.log(event)
       this.emit("channel_message", event as ChannelMessage)
     })
+
+    this._socket.on("channel_add", event => {
+      console.log(event)
+      this.emit("channel_add", new Channel(event))
+    })
+
+    this._socket.on("channel_remove", event => {
+      console.log(event)
+      this.emit("channel_remove", event as number)
+    })
+
+    this._socket.on("user_add", event => {
+      console.log(event)
+      this.emit("user_add", { channel: event.channel, user: new User(event.user) })
+    })
+
+    this._socket.on("user_remove", event => {
+      console.log(event)
+      this.emit("user_remove", event as UserRemoveMessage)
+    })
   }
 
   public close() {
@@ -50,6 +75,7 @@ export class SocketManager extends Emitter<SocketManagerEvents, SocketManagerEve
 
   constructor() {
     super()
+    markRaw(this)
 
     const self = window as unknown as { socketManager: SocketManager | null }
     if (self.socketManager != null) {

@@ -13,9 +13,9 @@ export default defineComponent({
   name: "App",
   setup(props, ctx) {
     const socket = new SocketManager()
-    const channelListAdapter = new ChannelListAdapter()
+    const channelListAdapter = new ChannelListAdapter(socket)
     const userAdapter = new UserAdapter(socket, channelListAdapter)
-    new ChannelAdapter()
+    new ChannelAdapter(socket)
 
     const ready = ref(false)
     userAdapter.initCurrentUser().then(() => {

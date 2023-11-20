@@ -1,11 +1,12 @@
+import axios from "axios"
+import { api } from "src/boot/axios"
 import { Channel, ChannelType } from "src/contracts/Channel"
 import { Message } from "src/contracts/Message"
 import { User } from "src/contracts/User"
 import { InjectionKey, Ref, inject, onUnmounted, provide, reactive, ref, watch } from "vue"
 import { useChannelAdapter } from "./ChannelAdapter"
+import { SocketManager } from "./SocketManager"
 import { CommandError } from "./errors"
-import { api } from "src/boot/axios"
-import axios from "axios"
 const CHANNEL_LIST_KEY = Symbol("channel-list-key") as InjectionKey<ChannelListAdapter>
 
 export class ChannelListAdapter {
@@ -75,9 +76,57 @@ export class ChannelListAdapter {
     return null
   }
 
-  constructor() {
-    const self = reactive(this)
+  constructor(
+    protected _socket: SocketManager
+  ) {
+    const self = reactive(this) as this
     provide(CHANNEL_LIST_KEY, self)
+
+    this._socket.on("channel_message", (event) => {
+      const channel = self.channels.get(event.channel)
+      if (!channel) {
+        console.warn(`Received message on unknown channel "${event.channel}" - ${JSON.stringify(event.text)}`)
+        return
+      }
+
+      const user = channel.users.find(v => v.id == event.author)
+      if (!user) {
+        console.warn(`Received message from unknown user "${event.author}" - ${JSON.stringify(event.text)}`)
+        return
+      }
+
+      channel.messages.push(new Message({
+        id: event.id,
+        content: event.text,
+        user
+      }))
+    })
+
+    this._socket.on("channel_add", (event) => {
+      self.channels.set(event.id, event)
+    })
+
+    this._socket.on("channel_remove", (event) => {
+      self.channels.delete(event)
+    })
+
+    this._socket.on("user_add", (event) => {
+      const channel = self.channels.get(event.channel)
+      if (!channel) {
+        console.warn(`Received user add on unknown channel "${event.channel}"`)
+        return
+      }
+      channel.users.push(event.user)
+    })
+
+    this._socket.on("user_remove", (event) => {
+      const channel = self.channels.get(event.channel)
+      if (!channel) {
+        console.warn(`Received user remove on unknown channel "${event.channel}"`)
+        return
+      }
+      channel.users = channel.users.filter(v => v.id != event.user)
+    })
     /*
     // Mock for user typing
     setInterval(() => {
@@ -115,6 +164,8 @@ export function useChannelLoader(id: Ref<number>) {
     loading.value = true
     channelAdapter.setSelectedChannel(null)
     error.value = null
+    if (isNaN(id)) return
+
     channelList.getChannel(id).then(newChannel => {
       if (newChannel == null) {
         error.value = "Channel not found"

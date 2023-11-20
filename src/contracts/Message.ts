@@ -16,6 +16,7 @@ export interface RawMessage {
 }
 
 export interface ChannelMessage extends RawMessage {
+  id: number
   channel: number
   text: string
   author: number

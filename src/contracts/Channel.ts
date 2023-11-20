@@ -1,5 +1,5 @@
 import { reactive } from "vue"
-import { ChannelMessage, Message } from "./Message"
+import { Message } from "./Message"
 import { User } from "./User"
 
 export type ChannelType = "public" | "private"
@@ -18,4 +18,14 @@ export class Channel {
     if (opt) Object.assign(this, opt)
     return reactive(this)
   }
+}
+
+export interface UserAddMessage {
+  channel: number
+  user: User
+}
+
+export interface UserRemoveMessage {
+  channel: number
+  user: number
 }
