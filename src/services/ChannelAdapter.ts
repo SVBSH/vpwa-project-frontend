@@ -38,6 +38,7 @@ export class ChannelAdapter {
       if (axios.isAxiosError(error) && error.response) {
         throw new CommandError(error.response.data.message)
       }
+      throw error
     }
   }
 
@@ -49,6 +50,7 @@ export class ChannelAdapter {
     if (nickname == null || this._selectedChannel == null) {
       return false
     }
+    // const response = await api.post("/api/channel/1/invite", {userNickname: nickname})
     for (const member of this._selectedChannel.users) {
       if (member.nickname == nickname) {
         return true
@@ -127,32 +129,44 @@ export class ChannelAdapter {
     if (this._selectedChannel == null || targetUser == null) {
       return ""
     }
-    // channel is private and user is not channel admin
-    if (
-      this._selectedChannel.type === "private" &&
-      !this.isMemberAdmin(inviteInitiator.nickname)
-    ) {
-      throw new CommandError("You do not have a permission to invite other users to channel.")
+    try {
+      const response = await api.post("/api/channel/invite", {
+        channelId: this._selectedChannel.id,
+        userNickname: targetUser
+      })
+      return response.data.message
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        throw new CommandError(error.response.data.message)
+      }
+      throw error
     }
+  }
 
-    // TODO: send user invite message
-    if (this.isMember(targetUser)) {
-      throw new CommandError(`"${targetUser}" is already a member of the current channel`)
+  public async revoke(tUser: string) {
+    try {
+      const response = await api.post(
+        "/api/channel/revoke", { targetUser: tUser, channelId: this._selectedChannel?.id })
+      return response.data.message
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        throw new CommandError(error.response.data.message)
+      }
+      throw error
     }
+  }
 
-    if (this.isMemberBanned(targetUser) && !this.isMemberAdmin(inviteInitiator.nickname)) {
-      throw new CommandError("Only admin is allowed to invite a banned user.")
-    } else {
-      // TODO: clear ban record - should be done on server side
-      console.log("clearing restricted list for: ", targetUser)
-      this._selectedChannel.restrictedList.set(targetUser, [])
+  public async kick(tUser: string) {
+    try {
+      const response = await api.post(
+        "/api/channel/kick", { targetUser: tUser, channelId: this._selectedChannel?.id })
+      return response.data.message
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        throw new CommandError(error.response.data.message)
+      }
+      throw error
     }
-    // FIXME: only for testing purposes (fake user)
-    const user = new User({ id: 1000, nickname: targetUser, state: "online" })
-    this._selectedChannel.users.push(user)
-
-    // TODO: API call
-    return `Inviting ${targetUser} to current channel.`
   }
 }
 

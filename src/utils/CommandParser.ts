@@ -141,35 +141,18 @@ export default class CommandParser {
       throw new CommandError("Invalid command")
     }
 
-    const banInitiator: User = this.userAdapter.getCurrentUser()
     const targetUserNickname = args[0]
-    await this.channel.banMember(banInitiator, targetUserNickname)
-    return "User was banned from channel"
+    const response = await this.channel.kick(targetUserNickname)
+    return response
   }
 
   private async commandRevoke(args: string[]) {
     if (args.length != 1) {
       throw new CommandError("Invalid command")
     }
-
-    const currentUser: User = this.userAdapter.getCurrentUser()
     const nickname = args[0]
-
-    if (this.channel.selectedChannel == null) {
-      return null
-    }
-
-    if (this.channel.selectedChannel.type === "public") {
-      throw new CommandError("This command should be invoked only in public channels")
-    }
-
-    if (!this.channel.isMemberAdmin(currentUser.nickname)) {
-      throw new CommandError("Your are not allowed to add user to this channel")
-    }
-
-    // FIXME:
-    // await this.channel.removeUser(nickname)
-    return `User "${nickname}" will be removed from "${this.channel.selectedChannel.name}"`
+    const response = this.channel.revoke(nickname)
+    return response
   }
 
   private async commandShowChannelMembers(args: string[]) {
