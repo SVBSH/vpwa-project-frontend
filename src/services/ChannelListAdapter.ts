@@ -17,22 +17,29 @@ export class ChannelListAdapter {
    * fetches the user list and a list of messages.
    * */
   public async getChannel(id: number) {
-    const response = await api.get<Channel>(`/api/channel/${id}`)
+    try {
+      const response = await api.get<Channel>(`/api/channel/${id}`)
 
-    const partialChannel = this.channels.get(id)
-    if (partialChannel) {
-      partialChannel.users = response.data.users.map(user => {
-        return new User(user)
-      })
-
-      partialChannel.messages = response.data.messages.map(message => {
-        return new Message({
-          ...message,
-          user: response.data.users.find(user => user.id === message.user.id)
+      const partialChannel = this.channels.get(id)
+      if (partialChannel) {
+        partialChannel.users = response.data.users.map(user => {
+          return new User(user)
         })
-      })
+
+        partialChannel.messages = response.data.messages.map(message => {
+          return new Message({
+            ...message,
+            user: response.data.users.find(user => user.id === message.user.id)
+          })
+        })
+      }
+      return partialChannel
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        throw new CommandError(error.response.data.message)
+      }
+      throw error
     }
-    return partialChannel
   }
 
   public async joinChannel(chName: string, channelType: ChannelType) {
@@ -43,6 +50,7 @@ export class ChannelListAdapter {
       if (axios.isAxiosError(error) && error.response) {
         throw new CommandError(error.response.data.message)
       }
+      throw error
     }
   }
 
@@ -54,6 +62,7 @@ export class ChannelListAdapter {
       if (axios.isAxiosError(error) && error.response) {
         throw new CommandError(error.response.data.message)
       }
+      throw error
     }
   }
 
