@@ -14,7 +14,7 @@
             {{ channel.messages.length - index }}
           </q-badge> -->
 
-          <q-chat-message :key="message.id" :text="[message.content]" text-color="white" :name="message.user.nickname" bg-color="primary" class="q-my-sm" />
+          <q-chat-message :key="message.id" :text="[message.content]" text-color="white" :name="message.user.nickname" class="q-my-sm" :bg-color="getBgColor(message.content)" />
         </div>
       </q-infinite-scroll>
     </div>
@@ -44,15 +44,24 @@
 import { QBtn } from "quasar"
 import { User } from "src/contracts/User"
 import { useChannel } from "src/services/ChannelAdapter"
+import { useUserAdapter } from "src/services/UserAdapter"
 import { VNode, computed, defineComponent, h, shallowRef } from "vue"
 
 export default defineComponent({
   setup(props, ctx) {
     const channel = useChannel({ required: true })
     const userTypingSelected = shallowRef(null as User | null)
+    const userAdapter = useUserAdapter()
 
     function selectUserTyping(user: User | null) {
       userTypingSelected.value = user
+    }
+
+    const getBgColor = (messageContent: string) => {
+      if (messageContent.includes(`@${userAdapter.getCurrentUser().nickname}`)) {
+        return "#FFCC99"
+      }
+      return "primary"
     }
 
     const userTypingView = computed(() => {
@@ -93,7 +102,7 @@ export default defineComponent({
       return { kind: "select" as const, text: () => text }
     })
 
-    return { channel, selectUserTyping, userTypingView }
+    return { channel, selectUserTyping, userTypingView, getBgColor }
   }
 })
 </script>
