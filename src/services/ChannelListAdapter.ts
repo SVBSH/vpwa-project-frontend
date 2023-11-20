@@ -95,6 +95,12 @@ export class ChannelListAdapter {
         return
       }
 
+      if (Notification.permission == "granted") {
+        if (document.visibilityState == "hidden") {
+          new Notification(user.name, { body: event.text })
+        }
+      }
+
       channel.messages.push(new Message({
         id: event.id,
         content: event.text,

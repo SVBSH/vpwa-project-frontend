@@ -121,6 +121,10 @@ export class UserAdapter {
     } else {
       localStorage.setItem("user-token", this._token)
       this._socket.open()
+
+      if (Notification.permission != "denied" && Notification.permission != "granted") {
+        Notification.requestPermission()
+      }
     }
   }
 
