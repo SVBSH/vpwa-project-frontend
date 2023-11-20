@@ -127,6 +127,16 @@ export class ChannelListAdapter {
       }
       channel.users = channel.users.filter(v => v.id != event.user)
     })
+
+    this._socket.on("user_state", (event) => {
+      for (const channel of self.channels.values()) {
+        for (const user of channel.users) {
+          if (user.id == event.user) {
+            user.state = event.state
+          }
+        }
+      }
+    })
     /*
     // Mock for user typing
     setInterval(() => {

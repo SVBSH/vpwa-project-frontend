@@ -3,7 +3,7 @@ import { Socket, io } from "socket.io-client"
 import { api } from "src/boot/axios"
 import { Channel, UserAddMessage, UserRemoveMessage } from "src/contracts/Channel"
 import { ChannelMessage, RawMessage } from "src/contracts/Message"
-import { User, UserState } from "src/contracts/User"
+import { User, UserState, UserStateMessage } from "src/contracts/User"
 import { markRaw } from "vue"
 
 interface SocketManagerEvents {
@@ -12,6 +12,7 @@ interface SocketManagerEvents {
   "channel_remove": (event: number) => void
   "user_add": (event: UserAddMessage) => void
   "user_remove": (event: UserRemoveMessage) => void
+  "user_state": (event: UserStateMessage) => void
 }
 
 export class SocketManager extends Emitter<SocketManagerEvents, SocketManagerEvents, Record<never, never>> {
@@ -54,6 +55,11 @@ export class SocketManager extends Emitter<SocketManagerEvents, SocketManagerEve
     this._socket.on("user_remove", event => {
       console.log(event)
       this.emit("user_remove", event as UserRemoveMessage)
+    })
+
+    this._socket.on("user_state", event => {
+      console.log(event)
+      this.emit("user_state", event as UserStateMessage)
     })
   }
 

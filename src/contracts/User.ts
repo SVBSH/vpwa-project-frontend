@@ -30,3 +30,8 @@ export interface UserData {
   user: User,
   channels: Channel[]
 }
+
+export interface UserStateMessage {
+  user: number
+  state: UserState
+}

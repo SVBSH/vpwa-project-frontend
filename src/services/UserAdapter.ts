@@ -1,12 +1,12 @@
 import axios, { AxiosError } from "axios"
 import { api } from "src/boot/axios"
+import { Channel } from "src/contracts/Channel"
 import { ApiToken, User, UserData, UserState } from "src/contracts/User"
-import { FormError } from "src/services/errors"
+import { CommandError, FormError } from "src/services/errors"
 import { InjectionKey, inject, provide } from "vue"
 import { useRouter } from "vue-router"
-import { SocketManager } from "./SocketManager"
 import { ChannelListAdapter } from "./ChannelListAdapter"
-import { Channel } from "src/contracts/Channel"
+import { SocketManager } from "./SocketManager"
 
 const USER_KEY = Symbol("user-key") as InjectionKey<UserAdapter>
 
@@ -124,11 +124,18 @@ export class UserAdapter {
     }
   }
 
-  public setUserState(state: UserState) {
+  public async setUserState(state: UserState) {
     if (this._user == null) {
       throw new Error("User does not exist")
     }
-    this._user.state = state
+    try {
+      await api.post("/api/user/state", { state })
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        throw new CommandError(error.response.data.message)
+      }
+      throw error
+    }
   }
 
   constructor(
@@ -142,6 +149,12 @@ export class UserAdapter {
     if (savedToken) {
       this._token = savedToken
     }
+
+    this._socket.on("user_state", (event) => {
+      if (event.user == this._user?.id) {
+        this._user.state = event.state
+      }
+    })
   }
 }
 
