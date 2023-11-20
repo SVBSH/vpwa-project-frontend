@@ -7,9 +7,20 @@
         clickable
         v-ripple
         :to="`/channel/${channel.id}`"
-        @click="selectChannel(channel.id)"
+
       >
-        <q-item-section>{{ channel.name }}</q-item-section>
+        <q-item-section @click="selectChannel(channel.id)">
+            {{ channel.name }}
+            <q-icon v-show="channel.type === 'private'" size="sm" name="lock" />
+
+        </q-item-section>
+        <q-item-section>
+          <div class="q-pa-sm q-gutter-sm">
+            <q-btn   round color="orange"  />
+            <q-btn v-show="true" size="sm" round color="red" icon="delete" />
+          </div>
+        </q-item-section>
+
       </q-item>
     </q-list>
   </q-scroll-area>

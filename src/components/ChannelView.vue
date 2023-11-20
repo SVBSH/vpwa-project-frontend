@@ -1,7 +1,11 @@
 <template>
   <q-scroll-area class="root-area q-pa-md" v-if="channel != null">
     <div class="q-pa-md">
-      <q-infinite-scroll reverse ref="infiniteScroll" @load="loadMoreMessages">
+      <q-infinite-scroll
+        ref="infiniteScroll"
+        @load="loadMoreMessages"
+        reverse
+        >
         <!-- TODO: wait for API call -->
         <template v-slot:loading>
           <div class="row justify-center q-my-md">
@@ -18,8 +22,8 @@
             :key="message.id"
             :text="[message.content]"
             text-color="white"
-            :name="(!message.user) ? 'Unknown Author' : message.user.nickname"
-            :bg-color="(message.content.includes(`@${userNickname}`)) ? '#FBCEB1' : 'primary'"
+            :name="(!message.user) ? '(Deleted)' : message.user.nickname"
+            :bg-color="getBgColor(message.content)"
             class="q-my-sm" />
         </div>
       </q-infinite-scroll>
@@ -69,7 +73,7 @@ export default defineComponent({
 
     const getBgColor = (messageContent: string) => {
       if (messageContent.includes(`@${userAdapter.getCurrentUser().nickname}`)) {
-        return "#FFCC99"
+        return "green"
       }
       return "primary"
     }
@@ -79,24 +83,29 @@ export default defineComponent({
         if (!channelAdapter.selectedChannel) {
           return
         }
-        // Assume 'fetchMoreMessages' is a method that makes an API call
-        // You might need to pass parameters like the last message ID or a page number
-        const lastMessage = channelAdapter.selectedChannel.messages[0]
-        console.log("lastId:", lastMessage.id)
+        console.log("Before")
+        console.log(channel.value.messages)
+
+        const lastMessage = channel.value.messages[0]
+        console.log("last message: ", lastMessage.id)
+
         const newMessages = await api.get<Message[]>(`/api/channel/1/messages?lastId=${lastMessage.id}`)
+        if (newMessages) {
+          console.log("New messages")
+          console.log(newMessages.data)
+          channel.value.messages.unshift(
+            ...newMessages.data.map(message => new Message(message)),
+            ...channel.value.messages)
+        }
 
-        // Append new messages to channel.messages
-        channelAdapter.selectedChannel.messages = [...newMessages.data, ...channelAdapter.selectedChannel.messages]
+        console.log("After")
+        console.log("messages: ", channel.value.messages)
 
-        // Stop loading (you might have a loading state variable to update here)
         if (newMessages.data.length === 0) {
           infiniteScroll.value?.stop()
         }
-        // Disable infinite scroll if no more messages are available
       } catch (error) {
         console.error("Error loading more messages:", error)
-
-        // Handle the error appropriately
       }
     }
     // FIXME: enable
@@ -138,7 +147,7 @@ export default defineComponent({
     //   return { kind: "select" as const, text: () => text }
     // })
 
-    return { infiniteScroll, loadMoreMessages, userNickname, channel, selectUserTyping /* userTypingView, getBgColor */ }
+    return { getBgColor, infiniteScroll, loadMoreMessages, userNickname, channel, selectUserTyping /* userTypingView, getBgColor */ }
   }
 })
 </script>
