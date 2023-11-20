@@ -9,11 +9,11 @@
     </q-menu>
   </q-btn>
 
-  <q-btn flat :class="user.state" :label="user.state">
-    <q-menu>
+  <q-btn no-caps :color="USER_STATE_META[user.state].color" :class="user.state" :label="USER_STATE_META[user.state].label">
+    <q-menu :key="iteration">
       <q-list>
         <q-item clickable v-ripple v-for="state in inactiveUserState" :class="state" :key="state" @click="changeUserState(state)">
-          {{ state.toUpperCase() }}
+          {{ USER_STATE_META[state].label }}
         </q-item>
       </q-list>
     </q-menu>
@@ -22,22 +22,24 @@
 
 <script lang="ts">
 import { useQuasar } from "quasar"
-import { USER_STATE, UserState } from "src/contracts/User"
+import { USER_STATE, USER_STATE_META, UserState } from "src/contracts/User"
 import { useUserAdapter } from "src/services/UserAdapter"
 import { CommandError } from "src/services/errors"
-import { computed, defineComponent } from "vue"
+import { computed, defineComponent, ref } from "vue"
 
 export default defineComponent({
   setup(props, ctx) {
     const userAdapter = useUserAdapter()
     const user = userAdapter.getCurrentUser()
     const quasar = useQuasar()
+    const iteration = ref(0)
 
     function logout() {
       userAdapter.logout()
     }
 
     async function changeUserState(state: UserState) {
+      iteration.value++
       try {
         await userAdapter.setUserState(state)
       } catch (error) {
@@ -58,7 +60,7 @@ export default defineComponent({
       USER_STATE.filter((state) => state != user.state)
     )
 
-    return { user, logout, changeUserState, inactiveUserState }
+    return { user, iteration, USER_STATE_META, logout, changeUserState, inactiveUserState }
   }
 })
 </script>

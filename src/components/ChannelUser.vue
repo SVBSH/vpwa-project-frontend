@@ -1,21 +1,19 @@
 <template>
   <q-item>
     <q-item-section>{{ user.nickname }}</q-item-section>
-    <q-badge v-if="user.state == 'online'" class="user-state bg-green">Online</q-badge>
-    <q-badge v-if="user.state == 'dnd'" class="user-state bg-orange">DND</q-badge>
-    <q-badge v-if="user.state == 'offline'" class="user-state bg-red">Offline</q-badge>
+    <q-badge :class="`user-state bg-${USER_STATE_META[user.state].color}`"> {{ USER_STATE_META[user.state].label }}</q-badge>
   </q-item>
 </template>
 
 <script lang="ts">
-import { User } from "src/contracts/User"
+import { USER_STATE_META, User } from "src/contracts/User"
 import { defineComponent } from "vue"
 export default defineComponent({
   props: {
     user: { type: User, required: true }
   },
   setup(props, ctx) {
-    return {}
+    return { USER_STATE_META }
   }
 })
 </script>

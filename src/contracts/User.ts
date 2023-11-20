@@ -1,8 +1,14 @@
+import { NamedColor } from "quasar"
 import { reactive } from "vue"
 import { Channel } from "./Channel"
 
 export type UserState = (typeof USER_STATE)[number]
 export const USER_STATE = ["online", "offline", "dnd"] as const
+export const USER_STATE_META: Record<UserState, { color: NamedColor, label: string }> = {
+  online: { color: "green", label: "Online" },
+  dnd: { color: "orange", label: "DND" },
+  offline: { color: "red", label: "Offline" }
+}
 
 export class User {
   public id = 0
