@@ -8,7 +8,7 @@
         </q-card-section>
 
         <q-card-section class="q-pt-none">
-          <q-form @submit="handleSubmit" class="q-gutter-md">
+          <q-form @submit="handleSubmit" class="q-gutter-md" data-cy="login-form">
             <q-input key="name" v-if="isRegister" filled v-model="user.name" label="Name" lazy-rules :rules="inputRules" />
             <q-input key="surname" v-if="isRegister" filled v-model="user.surname" label="Surname" lazy-rules :rules="inputRules" />
             <q-input key="nickname" filled v-model="user.nickname" label="Nickname" lazy-rules :rules="inputRules" />

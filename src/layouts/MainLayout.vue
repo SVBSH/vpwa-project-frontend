@@ -3,7 +3,7 @@
 
     <q-header class="bg-primary text-white">
       <q-toolbar>
-        <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
+        <q-btn data-cy="menu-button" dense flat round icon="menu" @click="toggleLeftDrawer" />
 
         <q-toolbar-title>
           Title
@@ -15,8 +15,8 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer show-if-above v-model="leftDrawerOpen" side="left" bordered class="column">
-      <channel-list class="col-grow" />
+    <q-drawer data-cy="menu-container" show-if-above v-model="leftDrawerOpen" side="left" bordered class="column">
+      <channel-list data-cy="channel-list" class="col-grow" />
       <router-view name="sidebar" />
     </q-drawer>
 
