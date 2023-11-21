@@ -1,2 +1,6 @@
 videos/*
 screenshots/*
+wrappers
+
+support/component-index.html
+support/component.ts
