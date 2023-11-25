@@ -22,6 +22,10 @@ export class UserAdapter {
     return this._user!
   }
 
+  public isLoggedIn() {
+    return this._user != null
+  }
+
   public getToken() {
     return this._token
   }
@@ -72,8 +76,9 @@ export class UserAdapter {
 
   public logout() {
     this._user = null
-    localStorage.removeItem("user-login")
-    this._handleNoUser()
+    this._token = null
+    this._handleStateChange()
+    this._router.replace({ name: "Login", query: { redirect: this._router.currentRoute.value.fullPath } })
   }
 
   public async initCurrentUser() {
@@ -94,7 +99,7 @@ export class UserAdapter {
         // TODO: Add user channels to ChannelList
         this._handleStateChange()
       } catch (err) {
-        if (err instanceof AxiosError) {
+        if (err instanceof AxiosError && err.code != "ERR_NETWORK") {
           // Token is invalid
           this._token = null
           this._handleStateChange()
@@ -111,6 +116,7 @@ export class UserAdapter {
       // This error will stop Vue rendering and prevent the login page from loading. Resetting
       // the whole Vue app by reloading solves this problem.
       location.reload()
+      console.log("Reloading: no user")
     })
   }
 

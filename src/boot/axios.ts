@@ -1,6 +1,7 @@
 import axios, { AxiosInstance } from "axios"
 import { boot } from "quasar/wrappers"
 import { UserAdapter } from "src/services/UserAdapter"
+import { shallowRef } from "vue"
 
 declare module "@vue/runtime-core" {
   interface ComponentCustomProperties {
@@ -9,7 +10,8 @@ declare module "@vue/runtime-core" {
   }
 }
 
-const api = axios.create() as AxiosInstance & { userAdapter: UserAdapter }
+const api = axios.create() as AxiosInstance & { userAdapter: UserAdapter, isOffline: { value: boolean } }
+api.isOffline = shallowRef(false)
 api.interceptors.request.use((config) => {
   const token = api.userAdapter.getToken()
 
@@ -19,6 +21,7 @@ api.interceptors.request.use((config) => {
 
   return config
 })
+void ((window as unknown as Record<string, object>).api = api)
 
 export default boot(({ app }) => {
   // for use inside Vue files (Options API) through this.$axios and this.$api

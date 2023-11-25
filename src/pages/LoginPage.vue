@@ -53,9 +53,17 @@ export default defineComponent({
     const router = useRouter()
     const isRegister = ref(false)
 
+    function redirectBack() {
+      router.replace((route.query.redirect as string) ?? "/")
+    }
+
+    if (userAdapter.isLoggedIn()) {
+      redirectBack()
+    }
+
     function handleSubmit() {
       userAdapter[isRegister.value ? "register" : "login"](user.value).then(() => {
-        router.replace((route.query.redirect as string) ?? "/")
+        redirectBack()
       }, error => {
         if (error instanceof FormError) {
           quasar.notify({
