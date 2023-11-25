@@ -109,6 +109,7 @@ module.exports = {
     "no-new": "off",
     "no-use-before-define": "off",
     "space-before-function-paren": "off",
-    "no-redeclare": "off"
+    "no-redeclare": "off",
+    "vue/no-mutating-props": "off"
   }
 }

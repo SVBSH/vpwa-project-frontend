@@ -19,8 +19,9 @@
             :text="[message.content]"
             text-color="white"
             :name="(!message.user) ? 'Unknown Author' : message.user.nickname"
-            :bg-color="(message.content.includes(`@${userNickname}`)) ? '#FBCEB1' : 'primary'"
-            class="q-my-sm" />
+            :bg-color="getBgColor(message)"
+            class="q-my-sm"
+          />
         </div>
       </q-infinite-scroll>
     </div>
@@ -47,13 +48,13 @@
 </style>
 
 <script lang="ts">
-import { QBtn, QInfiniteScroll } from "quasar"
+import { QInfiniteScroll } from "quasar"
 import { api } from "src/boot/axios"
 import { Message } from "src/contracts/Message"
 import { User } from "src/contracts/User"
 import { useChannel, useChannelAdapter } from "src/services/ChannelAdapter"
 import { useUserAdapter } from "src/services/UserAdapter"
-import { VNode, computed, defineComponent, h, ref, shallowRef } from "vue"
+import { defineComponent, ref, shallowRef } from "vue"
 
 export default defineComponent({
   setup(props, ctx) {
@@ -67,11 +68,12 @@ export default defineComponent({
     const channelAdapter = useChannelAdapter()
     const infiniteScroll = ref<QInfiniteScroll | null>(null)
 
-    const getBgColor = (messageContent: string) => {
-      if (messageContent.includes(`@${userAdapter.getCurrentUser().nickname}`)) {
-        return "#FFCC99"
+    function getBgColor(message: Message) {
+      if (userAdapter.checkUserMention(message)) {
+        return "positive"
+      } else {
+        return "primary"
       }
-      return "primary"
     }
 
     const loadMoreMessages = async () => {
@@ -138,7 +140,7 @@ export default defineComponent({
     //   return { kind: "select" as const, text: () => text }
     // })
 
-    return { infiniteScroll, loadMoreMessages, userNickname, channel, selectUserTyping /* userTypingView, getBgColor */ }
+    return { infiniteScroll, loadMoreMessages, userNickname, channel, selectUserTyping, getBgColor /* userTypingView */ }
   }
 })
 </script>

@@ -7,6 +7,7 @@ import { InjectionKey, inject, provide } from "vue"
 import { useRouter } from "vue-router"
 import { ChannelListAdapter } from "./ChannelListAdapter"
 import { SocketManager } from "./SocketManager"
+import { Message } from "src/contracts/Message"
 
 const USER_KEY = Symbol("user-key") as InjectionKey<UserAdapter>
 
@@ -20,6 +21,10 @@ export class UserAdapter {
       this._handleNoUser()
     }
     return this._user!
+  }
+
+  public checkUserMention(message: Message) {
+    return message.content.includes(`@${this._user!.nickname}`)
   }
 
   public isLoggedIn() {
@@ -89,7 +94,13 @@ export class UserAdapter {
         const response = await api.get<UserData>("/api/auth/me")
         const channelList = new Map<number, Channel>([])
 
-        this._user = new User(response.data.user)
+        const newUser = new User(response.data.user)
+        if (this._user != null) {
+          Object.assign(this._user, newUser)
+        } else {
+          this._user = newUser
+        }
+
         response.data.channels.forEach((channel: Channel) => {
           channelList.set(channel.id, new Channel(channel))
         })

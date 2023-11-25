@@ -10,6 +10,9 @@ export const USER_STATE_META: Record<UserState, { color: NamedColor, label: stri
   offline: { color: "red", label: "Offline" }
 }
 
+export type UserNotifySettings = (typeof USER_NOTIFY_SETTINGS)[number]
+export const USER_NOTIFY_SETTINGS = ["all", "mentioned", "none"] as const
+
 export class User {
   public id = 0
   public name = ""
@@ -18,6 +21,7 @@ export class User {
   public password = ""
   public email = ""
   public state: UserState = "online"
+  public notifications: UserNotifySettings = "all"
 
   constructor(opt?: Partial<User>) {
     if (opt) Object.assign(this, opt)

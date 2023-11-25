@@ -9,11 +9,7 @@
 
         <q-card-section class="q-pt-none">
           <q-form @submit="handleSubmit" class="q-gutter-md">
-            <q-input key="name" v-if="isRegister" filled v-model="user.name" label="Name" lazy-rules :rules="inputRules" />
-            <q-input key="surname" v-if="isRegister" filled v-model="user.surname" label="Surname" lazy-rules :rules="inputRules" />
-            <q-input key="nickname" filled v-model="user.nickname" label="Nickname" lazy-rules :rules="inputRules" />
-            <q-input key="password" filled v-model="user.password" label="Password" type="password" lazy-rules :rules="inputRules" />
-            <q-input key="email" v-if="isRegister" filled v-model="user.email" label="E-Mail" type="email" lazy-rules :rules="inputRules" />
+            <user-form :user="user" :is-register="isRegister" :rules="inputRules" />
 
             <div>
               <q-btn :label="isRegister ? 'Register' : 'Login'" type="submit" color="primary" />
@@ -37,6 +33,7 @@
 
 <script lang="ts">
 import { useQuasar } from "quasar"
+import UserForm from "src/components/UserForm.vue"
 import { User } from "src/contracts/User"
 import { useUserAdapter } from "src/services/UserAdapter"
 import { FormError } from "src/services/errors"
@@ -46,21 +43,18 @@ import { useRoute, useRouter } from "vue-router"
 export default defineComponent({
   setup(props, ctx) {
     const quasar = useQuasar()
-    const user = ref(new User({ name: "Janko", surname: "Mrkvicka", nickname: "user-1", password: "12345", email: "user@example.com" }))
     const inputRules = [(val: string) => (val && val.length > 0) || "Please type something"]
+    const user = ref(new User({ name: "", surname: "", nickname: "", password: "", email: "user@example.com" }))
     const userAdapter = useUserAdapter()
     const route = useRoute()
     const router = useRouter()
     const isRegister = ref(false)
-
     function redirectBack() {
       router.replace((route.query.redirect as string) ?? "/")
     }
-
     if (userAdapter.isLoggedIn()) {
       redirectBack()
     }
-
     function handleSubmit() {
       userAdapter[isRegister.value ? "register" : "login"](user.value).then(() => {
         redirectBack()
@@ -77,16 +71,14 @@ export default defineComponent({
         }
       })
     }
-
     function setLogin() {
       isRegister.value = false
     }
-
     function setRegister() {
       isRegister.value = true
     }
-
-    return { handleSubmit, user, inputRules, isRegister, setLogin, setRegister }
-  }
+    return { handleSubmit, user, isRegister, setLogin, setRegister, inputRules }
+  },
+  components: { UserForm }
 })
 </script>

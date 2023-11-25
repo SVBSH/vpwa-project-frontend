@@ -1,9 +1,12 @@
 <template>
   <q-btn flat :label="user.nickname" icon="person" no-caps>
-    <q-menu>
+    <q-menu :key="iteration">
       <q-list>
         <q-item clickable v-ripple @click="logout">
           <q-item-section>Sign out</q-item-section>
+        </q-item>
+        <q-item clickable v-ripple @click="settings">
+          <q-item-section>Settings</q-item-section>
         </q-item>
       </q-list>
     </q-menu>
@@ -26,6 +29,7 @@ import { USER_STATE, USER_STATE_META, UserState } from "src/contracts/User"
 import { useUserAdapter } from "src/services/UserAdapter"
 import { CommandError } from "src/services/errors"
 import { computed, defineComponent, ref } from "vue"
+import { useRouter } from "vue-router"
 
 export default defineComponent({
   setup(props, ctx) {
@@ -33,9 +37,15 @@ export default defineComponent({
     const user = userAdapter.getCurrentUser()
     const quasar = useQuasar()
     const iteration = ref(0)
+    const router = useRouter()
 
     function logout() {
       userAdapter.logout()
+    }
+
+    function settings() {
+      router.push({ name: "Settings" })
+      iteration.value++
     }
 
     async function changeUserState(state: UserState) {
@@ -56,11 +66,8 @@ export default defineComponent({
         }
       }
     }
-    const inactiveUserState = computed(() =>
-      USER_STATE.filter((state) => state != user.state)
-    )
-
-    return { user, iteration, USER_STATE_META, logout, changeUserState, inactiveUserState }
+    const inactiveUserState = computed(() => USER_STATE.filter((state) => state != user.state))
+    return { user, iteration, USER_STATE_META, logout, changeUserState, inactiveUserState, settings }
   }
 })
 </script>

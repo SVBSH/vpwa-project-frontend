@@ -89,23 +89,28 @@ export class ChannelListAdapter {
         return
       }
 
-      const user = channel.users.find(v => v.id == event.author)
-      if (!user) {
+      const author = channel.users.find(v => v.id == event.author)
+      if (!author) {
         console.warn(`Received message from unknown user "${event.author}" - ${JSON.stringify(event.text)}`)
         return
       }
 
-      if (Notification.permission == "granted") {
-        if (document.visibilityState == "hidden") {
-          new Notification(user.name, { body: event.text })
-        }
-      }
-
-      channel.messages.push(new Message({
+      const message = new Message({
         id: event.id,
         content: event.text,
-        user
-      }))
+        user: author
+      })
+
+      channel.messages.push(message)
+
+      if (Notification.permission == "granted") {
+        const user = api.userAdapter.getCurrentUser()
+        if (user.notifications == "all" || (user.notifications == "mentioned" && api.userAdapter.checkUserMention(message))) {
+          if (document.visibilityState == "hidden") {
+            new Notification(author.name, { body: event.text })
+          }
+        }
+      }
     })
 
     this._socket.on("channel_add", (event) => {
