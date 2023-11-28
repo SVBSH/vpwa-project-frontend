@@ -2,7 +2,7 @@ import { Emitter } from "@socket.io/component-emitter"
 import { Socket, io } from "socket.io-client"
 import { api } from "src/boot/axios"
 import { Channel, UserAddMessage, UserRemoveMessage } from "src/contracts/Channel"
-import { ChannelMessage, RawMessage } from "src/contracts/Message"
+import { ChannelMessage, RawMessage, UserTypingMessage } from "src/contracts/Message"
 import { User, UserState, UserStateMessage } from "src/contracts/User"
 import { markRaw } from "vue"
 
@@ -13,6 +13,7 @@ interface SocketManagerEvents {
   "user_add": (event: UserAddMessage) => void
   "user_remove": (event: UserRemoveMessage) => void
   "user_state": (event: UserStateMessage) => void
+  "user_typing": (event: UserTypingMessage) => void
 }
 
 export class SocketManager extends Emitter<SocketManagerEvents, SocketManagerEvents, Record<never, never>> {
@@ -35,6 +36,11 @@ export class SocketManager extends Emitter<SocketManagerEvents, SocketManagerEve
     this._socket.on("channel_message", event => {
       console.log(event)
       this.emit("channel_message", event as ChannelMessage)
+    })
+
+    this._socket.on("user_typing", event => {
+      console.log(event)
+      this.emit("user_typing", event as UserTypingMessage)
     })
 
     this._socket.on("channel_add", event => {
@@ -72,6 +78,11 @@ export class SocketManager extends Emitter<SocketManagerEvents, SocketManagerEve
   public sendMessage(channel: Channel, text: string) {
     if (this._socket == null) throw new Error("Tried to execute SocketManager.sendMessage, but no socket is open")
     this._socket.emit("channel_message", { channel: channel.id, text } as RawMessage)
+  }
+
+  public updateTyping(channel: Channel, text: string) {
+    if (this._socket == null) throw new Error("Tried to execute SocketManager.sendMessage, but no socket is open")
+    this._socket.emit("user_typing", { channel: channel.id, text } as RawMessage)
   }
 
   public updateStatus(status: UserState) {

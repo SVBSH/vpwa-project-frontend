@@ -20,6 +20,11 @@ export class ChannelAdapter {
     this._socket.sendMessage(this._selectedChannel, content)
   }
 
+  public updateTyping(content: string) {
+    if (this._selectedChannel == null) return
+    this._socket.updateTyping(this._selectedChannel, content)
+  }
+
   protected _selectedChannel: Channel | null = null
 
   constructor(

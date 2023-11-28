@@ -113,6 +113,42 @@ export class ChannelListAdapter {
       }
     })
 
+    this._socket.on("user_typing", (event) => {
+      const user = api.userAdapter.getCurrentUser()
+      if (event.author == user.id) return
+      const channel = this.channels.get(event.channel)
+      if (!channel) {
+        console.warn(`Received user typing message on unknown channel "${event.channel}" - ${JSON.stringify(event.text)}`)
+        return
+      }
+
+      const author = channel.users.find(v => v.id == event.author)
+      if (!author) {
+        console.warn(`Received user typing message from unknown user "${event.author}" - ${JSON.stringify(event.text)}`)
+        return
+      }
+
+      // If the received text is empty, that means the user has stopped typing, so delete the message.
+      if (event.text != "") {
+        channel.usersTyping.set(author, { lastUpdate: performance.now(), text: event.text })
+      } else {
+        channel.usersTyping.delete(author)
+      }
+    })
+
+    // When the an user stops typing (becomes idle), we delete the typing message after 2 seconds.
+    setInterval(() => {
+      const now = performance.now()
+      for (const channel of this.channels.values()) {
+        for (const [author, typing] of [...channel.usersTyping]) {
+          const age = now - typing.lastUpdate
+          if (age > 2000) {
+            channel.usersTyping.delete(author)
+          }
+        }
+      }
+    }, 100)
+
     this._socket.on("channel_add", (event) => {
       self.channels.set(event.id, event)
     })
@@ -148,26 +184,7 @@ export class ChannelListAdapter {
         }
       }
     })
-    /*
-    // Mock for user typing
-    setInterval(() => {
-      const typing = this.channels.get(0)!.usersTyping
-      let text = typing.get(user3)
 
-      if (text != null && text.length > 100) {
-        typing.delete(user3)
-        return
-      }
-
-      if (text == null) {
-        text = Math.random().toString().substring(2)
-      } else {
-        text += " " + Math.random().toString().substring(2)
-      }
-
-      typing.set(user3, text)
-    }, 1000)
-    */
     return self
   }
 }

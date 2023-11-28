@@ -3,13 +3,17 @@ import { Message } from "./Message"
 import { User } from "./User"
 
 export type ChannelType = "public" | "private"
+export interface UserTypingInfo {
+  text: string
+  lastUpdate: number
+}
 
 export class Channel {
   public id = 0
   public name = ""
   public messages: Message[] = []
   public users: User[] = []
-  public usersTyping = new Map<User, string>()
+  public usersTyping = new Map<User, UserTypingInfo>()
   public admin: User = null!
   public type: ChannelType = "public"
   public restrictedList = new Map<string, string[]>()

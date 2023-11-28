@@ -13,14 +13,21 @@ import { useQuasar } from "quasar"
 import { useChannelAdapter } from "src/services/ChannelAdapter"
 import { CommandError } from "src/services/errors"
 import CommandParser from "src/utils/CommandParser"
-import { defineComponent, ref } from "vue"
+import { defineComponent, ref, watch } from "vue"
+
 export default defineComponent({
   setup(props, ctx) {
     const messageText = ref("")
-    const channel = useChannelAdapter()
+    const channelAdapter = useChannelAdapter()
 
     const quasar = useQuasar()
     const commandParser = new CommandParser()
+
+    watch(messageText, messageText => {
+      if (channelAdapter.selectedChannel != null && messageText[0] != "/") {
+        channelAdapter.updateTyping(messageText)
+      }
+    })
 
     async function handleSubmit(event: Event) {
       event.preventDefault()
@@ -51,7 +58,7 @@ export default defineComponent({
           }
         }
       } else {
-        channel.sendMessage(message)
+        channelAdapter.sendMessage(message)
       }
       messageText.value = ""
     }

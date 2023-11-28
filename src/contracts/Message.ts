@@ -21,3 +21,7 @@ export interface ChannelMessage extends RawMessage {
   text: string
   author: number
 }
+
+export interface UserTypingMessage extends RawMessage {
+  author: number
+}
