@@ -22,6 +22,7 @@ export class User {
   public email = ""
   public state: UserState = "online"
   public notifications: UserNotifySettings = "all"
+  public pushSubscription: string | null = null
 
   constructor(opt?: Partial<User>) {
     if (opt) Object.assign(this, opt)

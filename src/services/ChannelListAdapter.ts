@@ -102,15 +102,6 @@ export class ChannelListAdapter {
       })
 
       channel.messages.push(message)
-
-      if (Notification.permission == "granted") {
-        const user = api.userAdapter.getCurrentUser()
-        if (user.notifications == "all" || (user.notifications == "mentioned" && api.userAdapter.checkUserMention(message))) {
-          if (document.visibilityState == "hidden") {
-            new Notification(author.name, { body: event.text })
-          }
-        }
-      }
     })
 
     this._socket.on("user_typing", (event) => {

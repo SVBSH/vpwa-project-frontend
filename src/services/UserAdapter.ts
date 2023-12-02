@@ -1,13 +1,13 @@
 import axios, { AxiosError } from "axios"
 import { api } from "src/boot/axios"
 import { Channel } from "src/contracts/Channel"
+import { Message } from "src/contracts/Message"
 import { ApiToken, User, UserData, UserState } from "src/contracts/User"
 import { CommandError, FormError } from "src/services/errors"
 import { InjectionKey, inject, provide } from "vue"
 import { useRouter } from "vue-router"
 import { ChannelListAdapter } from "./ChannelListAdapter"
 import { SocketManager } from "./SocketManager"
-import { Message } from "src/contracts/Message"
 
 const USER_KEY = Symbol("user-key") as InjectionKey<UserAdapter>
 
@@ -138,10 +138,6 @@ export class UserAdapter {
     } else {
       localStorage.setItem("user-token", this._token)
       this._socket.open()
-
-      if (Notification.permission != "denied" && Notification.permission != "granted") {
-        Notification.requestPermission()
-      }
     }
   }
 
@@ -157,6 +153,51 @@ export class UserAdapter {
       }
       throw error
     }
+  }
+
+  public async setUserSettings(settings: User) {
+    const settingsPayload: Record<string, string | null> = {}
+
+    if (settings.notifications != "none") {
+      if (Notification.permission == "denied") {
+        throw new FormError("Cannot enable notifications, please enable notification your browser")
+      } else if (Notification.permission == "default") {
+        const result = await Notification.requestPermission()
+        if (result != "granted") throw new FormError("Cannot enable notifications, please enable notification your browser")
+      }
+    }
+
+    for (const key of ["nickname", "name", "surname", "email", "password", "notifications"] as const) {
+      settingsPayload[key] = settings[key] || null
+    }
+    settingsPayload.pushSubscription = null
+
+    if (settings.notifications != "none" && this._user!.pushSubscription == null) {
+      const sw = await navigator.serviceWorker.ready
+      const key = await api.get<string>("/api/push/key")
+
+      let subscription
+      try {
+        subscription = await sw.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: key.data
+        })
+      } catch (error) {
+        throw new FormError((error as Error).message)
+      }
+
+      settingsPayload.pushSubscription = JSON.stringify(subscription)
+    }
+
+    api.post("/api/user/settings", settingsPayload).then(() => {
+      this.initCurrentUser()
+    }, error => {
+      if (axios.isAxiosError(error) && error.response) {
+        throw new FormError(error.response.data.message)
+      }
+
+      throw error
+    })
   }
 
   constructor(

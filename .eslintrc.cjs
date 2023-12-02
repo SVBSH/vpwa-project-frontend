@@ -106,6 +106,7 @@ module.exports = {
     "@typescript-eslint/no-unused-vars": "off",
     eqeqeq: "off",
     "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/no-explicit-any": "off",
     "no-new": "off",
     "no-use-before-define": "off",
     "space-before-function-paren": "off",

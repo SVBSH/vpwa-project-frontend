@@ -16,8 +16,10 @@
 </template>
 
 <script lang="ts">
+import { useQuasar } from "quasar"
 import { defineComponent, ref } from "vue"
 import { api } from "./boot/axios"
+import { ServiceWorkerMessage } from "./contracts/SW"
 import { ChannelAdapter } from "./services/ChannelAdapter"
 import { ChannelListAdapter } from "./services/ChannelListAdapter"
 import { SocketManager } from "./services/SocketManager"
@@ -29,6 +31,7 @@ export default defineComponent({
     const socket = new SocketManager()
     const channelListAdapter = new ChannelListAdapter(socket)
     const userAdapter = new UserAdapter(socket, channelListAdapter)
+    const quasar = useQuasar()
     new ChannelAdapter(socket)
 
     const offline = api.isOffline
@@ -37,6 +40,24 @@ export default defineComponent({
     userAdapter.initCurrentUser().then(() => {
       ready.value = true
     })
+
+    if (navigator.serviceWorker) {
+      navigator.serviceWorker.addEventListener("message", event => {
+        const messageData = event.data
+        if (typeof messageData == "object" && messageData != null && "kind" in messageData) {
+          console.log(messageData)
+          const message = messageData as ServiceWorkerMessage
+          if (message.kind == "confirm-notification") {
+            const user = userAdapter.isLoggedIn() ? userAdapter.getCurrentUser() : null
+            if (user?.id == message.notification.recipient && quasar.appVisible == false) {
+              navigator.serviceWorker.ready.then(v => v.active?.postMessage({ kind: "notification-confirmed", notification: message.notification } as ServiceWorkerMessage))
+            } else {
+              console.log("Rejected notification")
+            }
+          }
+        }
+      })
+    }
 
     return { ready, offline }
   }

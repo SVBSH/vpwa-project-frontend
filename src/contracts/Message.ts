@@ -22,6 +22,13 @@ export interface ChannelMessage extends RawMessage {
   author: number
 }
 
+export interface PushMessage {
+  recipient: number
+  author: string
+  text: string
+  channel: number
+}
+
 export interface UserTypingMessage extends RawMessage {
   author: number
 }

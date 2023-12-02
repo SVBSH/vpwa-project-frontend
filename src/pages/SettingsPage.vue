@@ -16,9 +16,8 @@
     <q-card-section class="q-pt-none">
       <q-form @submit="handleUserUpdate" class="q-gutter-md">
         <div>
-          <q-radio class="q-mr-md" v-for="state in USER_NOTIFY_SETTINGS" :key="state" dense v-model="user.notifications" :val="state" :label="capitalize(state)" />
+          <q-radio class="q-mr-md" v-for="state in USER_NOTIFY_SETTINGS" :key="state" dense v-model="userData.notifications" :val="state" :label="capitalize(state)" />
         </div>
-
       </q-form>
     </q-card-section>
   </q-card>
@@ -31,7 +30,6 @@
 
 <script lang="ts">
 import { useQuasar } from "quasar"
-import { api } from "src/boot/axios"
 import UserForm from "src/components/UserForm.vue"
 import { USER_NOTIFY_SETTINGS, User } from "src/contracts/User"
 import { useUserAdapter } from "src/services/UserAdapter"
@@ -46,23 +44,18 @@ export default defineComponent({
     const quasar = useQuasar()
 
     function handleUserUpdate() {
-      const settingsPayload: Record<string, string | null> = {}
-
-      for (const key of ["nickname", "name", "surname", "email", "password", "notifications"] as const) {
-        settingsPayload[key] = userData.value[key] || null
-      }
-
-      api.post("/api/user/settings", settingsPayload).then(() => {
-        userAdapter.initCurrentUser()
-      }, error => {
+      userAdapter.setUserSettings(userData.value).catch(error => {
         if (error instanceof FormError) {
+          console.error(error)
+
           quasar.notify({
             color: "red-5",
             textColor: "white",
             icon: "warning",
-            html: true,
             message: error.message
           })
+
+          cancelUserUpdate()
         } else {
           throw error
         }
