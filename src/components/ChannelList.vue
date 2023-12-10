@@ -8,8 +8,29 @@
         v-ripple
         :to="`/channel/${channel.id}`"
         @click="selectChannel(channel.id)"
+        class="q-pa-sm"
       >
-        <q-item-section>{{ channel.name }}</q-item-section>
+        <q-item-section>
+          {{ channel.name }}
+        </q-item-section>
+
+        <!-- Conditional Button Rendering -->
+        <q-item-section side>
+          <q-btn
+            v-if="channel.admin.id === userAdapter.getCurrentUser().id"
+            flat
+            dense
+            icon="delete"
+            @click.stop="removeChannel(channel.id)"
+          />
+          <q-btn
+            v-else
+            flat
+            dense
+            icon="logout"
+            @click.stop="removeChannel(channel.id)"
+          />
+        </q-item-section>
       </q-item>
     </q-list>
   </q-scroll-area>
@@ -20,12 +41,14 @@ import { useChannelAdapter } from "src/services/ChannelAdapter"
 import { useChannelList } from "src/services/ChannelListAdapter"
 import { defineComponent } from "vue"
 import { useRouter } from "vue-router"
+import { useUserAdapter } from "src/services/UserAdapter"
+
 export default defineComponent({
   setup(props, ctx) {
     const channelList = useChannelList()
     const channelAdapter = useChannelAdapter()
     const router = useRouter()
-
+    const userAdapter = useUserAdapter()
     async function selectChannel(channelId: number) {
       const reqChannel = await channelList.getChannel(channelId)
       if (reqChannel != undefined) {
@@ -33,7 +56,13 @@ export default defineComponent({
         router.push(`/channel/${channelId}`)
       }
     }
-    return { channelList, selectChannel }
+
+    async function removeChannel(channelId: number) {
+      channelAdapter.removeUser(channelId)
+      router.push("/")
+    }
+
+    return { channelList, selectChannel, userAdapter, removeChannel }
   }
 })
 </script>
