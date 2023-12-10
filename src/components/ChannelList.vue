@@ -60,7 +60,6 @@ export default defineComponent({
 
     async function removeChannel(channelId: number) {
       channelAdapter.removeUser(channelId)
-      router.push("/")
     }
 
     return { channelList, selectChannel, currentUserId, removeChannel }
