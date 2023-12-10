@@ -16,22 +16,37 @@
 
         <!-- Conditional Button Rendering -->
         <q-item-section side>
-          <q-btn
-            v-if="channel.admin == currentUserId"
-            flat
-            dense
-            icon="delete"
-            @click.stop="removeChannel(channel.id)"
-          />
-          <q-btn
-            v-else
-            flat
-            dense
-            icon="logout"
-            @click.stop="removeChannel(channel.id)"
-          />
+          <div>
+            <q-icon
+              v-if="channel.type === 'private'"
+              name="lock">
+            </q-icon>
+            <q-btn
+              v-if="channel.admin == currentUserId"
+              flat
+              dense
+              icon="delete"
+              @click.stop="removeChannel(channel.id)"
+            />
+            <q-btn
+              v-else
+              flat
+              dense
+              icon="logout"
+              @click.stop="removeChannel(channel.id)"
+            />
+          </div>
         </q-item-section>
       </q-item>
+      <q-item clickable  @click="createChannel">
+        <q-item-section>
+          <div>
+            <q-icon name="add"></q-icon>
+            Add Channel
+          </div>
+        </q-item-section>
+      </q-item>
+
     </q-list>
   </q-scroll-area>
 </template>
@@ -42,9 +57,12 @@ import { useChannelList } from "src/services/ChannelListAdapter"
 import { defineComponent } from "vue"
 import { useRouter } from "vue-router"
 import { useUserAdapter } from "src/services/UserAdapter"
+import { useQuasar } from "quasar"
+import DialogCreateChannel from "src/components/DialogCreateChannel.vue"
 
 export default defineComponent({
   setup(props, ctx) {
+    const quasar = useQuasar()
     const channelList = useChannelList()
     const channelAdapter = useChannelAdapter()
     const router = useRouter()
@@ -62,7 +80,16 @@ export default defineComponent({
       channelAdapter.removeUser(channelId)
     }
 
-    return { channelList, selectChannel, currentUserId, removeChannel }
+    function createChannel() {
+      quasar.dialog({
+        component: DialogCreateChannel,
+        componentProps: {
+          channelList
+        }
+      })
+    }
+
+    return { channelList, selectChannel, currentUserId, removeChannel, createChannel }
   }
 })
 </script>
