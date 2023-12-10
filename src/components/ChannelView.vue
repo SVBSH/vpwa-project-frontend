@@ -74,9 +74,16 @@ export default defineComponent({
     const loadMoreMessages = async (index: number, done: () => void) => {
       try {
         if (!channelAdapter.selectedChannel) {
+          infiniteScroll.value?.stop()
+          done()
           return
         }
         const lastMessage = channelAdapter.selectedChannel.messages[0]
+        if (!lastMessage) {
+          infiniteScroll.value?.stop()
+          return
+        }
+
         const channelId = channelAdapter.selectedChannel.id
         const newMessages = await api.get<Message[]>(`/api/channel/${channelId}/messages?lastId=${lastMessage.id}`)
 

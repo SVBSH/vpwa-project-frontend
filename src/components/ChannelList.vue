@@ -17,7 +17,7 @@
         <!-- Conditional Button Rendering -->
         <q-item-section side>
           <q-btn
-            v-if="channel.admin.id === userAdapter.getCurrentUser().id"
+            v-if="channel.admin == currentUserId"
             flat
             dense
             icon="delete"
@@ -56,13 +56,14 @@ export default defineComponent({
         router.push(`/channel/${channelId}`)
       }
     }
+    const currentUserId = userAdapter.getCurrentUser().id
 
     async function removeChannel(channelId: number) {
       channelAdapter.removeUser(channelId)
       router.push("/")
     }
 
-    return { channelList, selectChannel, userAdapter, removeChannel }
+    return { channelList, selectChannel, currentUserId, removeChannel }
   }
 })
 </script>
