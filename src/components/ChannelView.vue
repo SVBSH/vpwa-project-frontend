@@ -13,7 +13,7 @@
             :key="message.id"
             :text="[message.content]"
             text-color="white"
-            :name="(!message.user) ? 'Unknown Author' : message.user.nickname"
+            :name="(!message.user) ? 'Removed Author' : message.user.nickname"
             :bg-color="getBgColor(message)"
             class="q-my-sm"
           />
@@ -45,7 +45,7 @@
 <script lang="ts">
 import { QBtn, QInfiniteScroll } from "quasar"
 import { api } from "src/boot/axios"
-import { Message } from "src/contracts/Message"
+import { Message, ChannelMessage } from "src/contracts/Message"
 import { User } from "src/contracts/User"
 import { useChannel, useChannelAdapter } from "src/services/ChannelAdapter"
 import { useUserAdapter } from "src/services/UserAdapter"
@@ -85,10 +85,15 @@ export default defineComponent({
         }
 
         const channelId = channelAdapter.selectedChannel.id
-        const newMessages = await api.get<Message[]>(`/api/channel/${channelId}/messages?lastId=${lastMessage.id}`)
+        const newMessages = await api.get<ChannelMessage[]>(`/api/channel/${channelId}/messages?lastId=${lastMessage.id}`)
 
         newMessages.data.reverse().forEach(message => {
-          channelAdapter.selectedChannel?.messages.unshift(message)
+          channelAdapter.selectedChannel?.messages.unshift(
+            new Message({
+              ...message,
+              user: channel.value.users.find(user => user.id == message.author)
+            })
+          )
         })
 
         if (newMessages.data.length === 0) {
