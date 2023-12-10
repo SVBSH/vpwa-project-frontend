@@ -60,14 +60,11 @@ rUserMembership o--o rUser
 rUserMembership o--o rChannel
 rMessage "1" o--> "1..*" rChannel
 rBan "1" o--> "1..*" rChannel
-rBan "1" o--> "0..*" rUser : bannedBy
-rBan "1" o--> "0..*" rUser : bannedUser
+rBan "1" o--> "0..*" rUser
 rBannedUser "1" o--> "1..*" rChannel
 rBannedUser "1" o--> "0..*" rUser : bannedUser
 rChannel "1" o--> "*" rMessage
-rChannel "*" o--> "*" rUser : users
+rChannel "*" o--> "*" rUser
 rChannel "1" o--> "*" rBan
-rUser "*" o--> "*" rChannel : channels
-rUser "*" o--o "*" rChannel : bannedUsers
 
 @enduml
