@@ -1,44 +1,73 @@
-@startuml lala
+@startuml Diagram
 
-
-enum userState {
+enum UserState {
     ONLINE
-    DND
     OFFLINE
+    DND
+}
+
+enum UserNotifySettings {
+    ALL
+    MENTIONED
+    NONE
 }
 
 Class "User" as rUser {
-    * id : number <<generated>>
-    * name: string
-    * surname : string
-    * nickname: string
-    * password: string
-    * email: string
-    * state: userState
+    - id : number <<generated>>
+    - nickname: string
+    - password: string <<hidden>>
+    - name: string
+    - surname : string
+    - email: string
+    - state: UserState
+    - notifications: UserNotifySettings
 }
 
 class "Message" as rMessage {
-    * id: number <<generated>>
-    * sent: datetime
-    * content: string
-    * channelId: <<FK>>
-    * author: <<FK>>
+    - id: number <<generated>>
+    - createdBy: number <<FK>>
+    - channelId: number <<FK>>
+    - content: string
 }
 
 class "Channel" as rChannel {
-    * id: number <<generated>>
-    * name: string
-    * isPublic: boolean
-    * adminId: <<FK>>
+    - id: number <<generated>>
+    - name: string
+    - channelAdmin: number <<FK>>
+    - isPublic: boolean
 }
 
 Class "UserMembership" as rUserMembership {
-    userId: <<FK>>
-    channelId: <<FK>>
+    - userId: number <<FK>>
+    - channelId: number <<FK>>
+}
+
+class "Ban" as rBan {
+    - id: number <<generated>>
+    - channelId: number <<FK>>
+    - bannedById: number <<FK>>
+    - bannedUserId: number <<FK>>
+}
+
+class "BannedUser" as rBannedUser {
+    - id: number <<generated>>
+    - bannedUserId: number <<FK>>
+    - channelId: number <<FK>>
+    - bannedById: number <<FK>>
 }
 
 rUserMembership o--o rUser
 rUserMembership o--o rChannel
-rMessage o--> rChannel
+rMessage "1" o--> "1..*" rChannel
+rBan "1" o--> "1..*" rChannel
+rBan "1" o--> "0..*" rUser : bannedBy
+rBan "1" o--> "0..*" rUser : bannedUser
+rBannedUser "1" o--> "1..*" rChannel
+rBannedUser "1" o--> "0..*" rUser : bannedUser
+rChannel "1" o--> "*" rMessage
+rChannel "*" o--> "*" rUser : users
+rChannel "1" o--> "*" rBan
+rUser "*" o--> "*" rChannel : channels
+rUser "*" o--o "*" rChannel : bannedUsers
 
 @enduml
