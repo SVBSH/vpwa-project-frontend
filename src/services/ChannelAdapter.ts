@@ -112,7 +112,7 @@ export class ChannelAdapter {
     }
 
     // if ban initiator is an admin - remove user from channel
-    if (banInitiator.id == this._selectedChannel.admin.id) {
+    if (banInitiator.id == this._selectedChannel.adminID) {
       restrictedList.set(
         targetUser,
         [banInitiator.nickname, banInitiator.nickname, banInitiator.nickname])

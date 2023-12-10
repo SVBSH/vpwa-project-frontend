@@ -15,6 +15,7 @@ export class Channel {
   public users: User[] = []
   public usersTyping = new Map<User, UserTypingInfo>()
   public admin: User = null!
+  public get adminID() { return typeof this.admin == "string" ? this.admin : this.admin.id }
   public type: ChannelType = "public"
   public restrictedList = new Map<string, string[]>()
 
