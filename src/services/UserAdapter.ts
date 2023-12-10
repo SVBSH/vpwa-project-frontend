@@ -172,7 +172,7 @@ export class UserAdapter {
     }
     settingsPayload.pushSubscription = null
 
-    if (settings.notifications != "none" && this._user!.pushSubscription == null) {
+    if (navigator.serviceWorker && process.env.MODE == "pwa" && settings.notifications != "none" && this._user!.pushSubscription == null) {
       const sw = await navigator.serviceWorker.ready
       const key = await api.get<string>("/api/push/key")
 

@@ -16,9 +16,14 @@
     <q-card-section class="q-pt-none">
       <q-form @submit="handleUserUpdate" class="q-gutter-md">
         <div>
-          <q-radio class="q-mr-md" v-for="state in USER_NOTIFY_SETTINGS" :key="state" dense v-model="userData.notifications" :val="state" :label="capitalize(state)" />
+          <q-radio :disable="!notificationsPossible" class="q-mr-md" v-for="state in USER_NOTIFY_SETTINGS" :key="state" dense v-model="userData.notifications" :val="state" :label="capitalize(state)" />
         </div>
       </q-form>
+      <q-card v-if="!notificationsPossible" class="q-mt-md bg-red-2" bordered flat>
+        <q-card-section>
+          Your browser does not support service workers, therefore notification will not be enabled.
+        </q-card-section>
+      </q-card>
     </q-card-section>
   </q-card>
 
@@ -42,6 +47,7 @@ export default defineComponent({
     const user = userAdapter.getCurrentUser()
     const userData = shallowRef(new User(user))
     const quasar = useQuasar()
+    const notificationsPossible = navigator.serviceWorker && process.env.MODE == "pwa"
 
     function handleUserUpdate() {
       userAdapter.setUserSettings(userData.value).catch(error => {
@@ -66,7 +72,7 @@ export default defineComponent({
       userData.value = new User(user)
     }
 
-    return { user, userData, handleUserUpdate, cancelUserUpdate, USER_NOTIFY_SETTINGS, capitalize }
+    return { user, userData, handleUserUpdate, cancelUserUpdate, USER_NOTIFY_SETTINGS, capitalize, notificationsPossible }
   },
   components: { UserForm }
 })
